@@ -1,0 +1,2 @@
+This is a copy of the nixpkgs repo, with additional packages defined
+for personal use (typically versions of isabelle and HOL).
