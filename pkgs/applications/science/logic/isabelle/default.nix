@@ -11,7 +11,7 @@ stdenv.mkDerivation {
   inherit dirname theories;
 
   src = fetchurl {
-    url = http://isabelle.in.tum.de/dist/Isabelle2013_linux.tar.gz;
+    url = http://isabelle.in.tum.de/website-Isabelle2013/dist/Isabelle2013_linux.tar.gz;
     sha256 = "0l17s41hwzma0q2glpxrzic8i6mqd9b7awlpwhz0jkli7fj6ny7b";
   };
 
