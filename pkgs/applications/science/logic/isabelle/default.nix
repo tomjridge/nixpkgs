@@ -15,36 +15,46 @@ stdenv.mkDerivation {
     sha256 = "0l17s41hwzma0q2glpxrzic8i6mqd9b7awlpwhz0jkli7fj6ny7b";
   };
 
-  buildInputs = [ perl polyml nettools ];
+  phases = [ "unpackPhase" "installPhase" ];
 
-  sourceRoot = dirname;
-
-  patches = [ ./settings.patch ];
-
-  postPatch = ''
-    ENV=$(type -p env)
-    patchShebangs "."
-    substituteInPlace lib/Tools/env \
-      --replace /usr/bin/env $ENV
-    substituteInPlace lib/Tools/install \
-      --replace /usr/bin/env $ENV
-    substituteInPlace src/Pure/IsaMakefile \
-      --replace /bin/bash /bin/sh
-    substituteInPlace etc/settings \
-      --subst-var-by ML_HOME "${polyml}/bin" \
-      --subst-var-by PROOFGENERAL_HOME "${proofgeneral}/share/emacs/site-lisp/ProofGeneral"
-  '';
-
-  buildPhase = ''
-    ./build $theories
-  '';
+# looks like the current version of isabelle doesn't need any building etc, just installing
+#   buildInputs = [ perl polyml nettools ];
+# 
+#   sourceRoot = dirname;
+# 
+#   # patches = [ ./settings.patch ];
+#   patches = [];
+# 
+#   postPatch = ''
+#     ENV=$(type -p env)
+#     patchShebangs "."
+#     substituteInPlace lib/Tools/env \
+#       --replace /usr/bin/env $ENV
+#     substituteInPlace lib/Tools/install \
+#       --replace /usr/bin/env $ENV
+#     substituteInPlace src/Pure/IsaMakefile \
+#       --replace /bin/bash /bin/sh
+#     substituteInPlace etc/settings \
+#       --subst-var-by ML_HOME "${polyml}/bin" \
+#       --subst-var-by PROOFGENERAL_HOME "${proofgeneral}/share/emacs/site-lisp/ProofGeneral"
+#   '';
+# 
+#   buildPhase = ''
+#     ./build $theories
+#   '';
+# 
+#   installPhase = ''
+#     mkdir -p $out/bin
+#     mv $TMP/$dirname $out
+#     cd $out/$dirname
+#     bin/isabelle install -p $out/bin
+#   '';
 
   installPhase = ''
-    mkdir -p $out/bin
-    mv $TMP/$dirname $out
-    cd $out/$dirname
-    bin/isabelle install -p $out/bin
+    mkdir -p $out
+    mv * $out
   '';
+
 
   meta = {
     description = "A generic proof assistant";
