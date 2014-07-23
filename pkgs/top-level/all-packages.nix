@@ -10751,6 +10751,10 @@ let
 
   hol = callPackage ../applications/science/logic/hol { };
 
+  myhol = callPackage ../applications/science/logic/myhol { };
+
+  hol4k9 = callPackage ../applications/science/logic/hol4k9 { };
+
   hol_light = callPackage ../applications/science/logic/hol_light {
     inherit (ocamlPackages) findlib;
     camlp5 = ocamlPackages.camlp5_strict;
