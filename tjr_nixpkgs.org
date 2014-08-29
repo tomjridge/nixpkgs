@@ -1,0 +1,86 @@
+This is a copy of the nixpkgs repo, with additional packages defined
+for personal use (typically versions of isabelle and HOL).
+
+* 2014-??-?? initial setup
+
+--
+
+Updated/new files:
+
+pkgs/applications/science/logic/myhol   |fails (no hash for fetchgit?)
+pkgs/applications/science/logic/hol4k9  |ok                           
+pkgs/applications/science/logic/isabelle|ok for isa2013 - needs updating, but probably not worth it, just install from web
+
+
+--
+
+merge changes from upstream: https://help.github.com/articles/fork-a-repo
+
+--
+
+Checkout nixpkgs from github
+
+Add a directory like pkgs/applications/science/logic/myhol/
+
+In this directory, link to e.g. /tmp/l/general/research/code/nix/myhol/default.nix
+
+Change pkgs/top-level/all-packages.nix so that it has an extra clause: myhol = callPackage ../applications/science/logic/myhol { };
+
+put this clause just after the hol clause
+
+Then in the top-level of the github checkout, type:
+
+nix-build -A hol4k9
+
+or 
+
+nix-build -A myhol
+
+
+finally, ls -al to see where result points, then nix-env -i ./result
+
+
+TODO: add a polyml 5.5 version to nixpkgs
+
+
+
+https://nixos.org/wiki/How_to_add_files_to_the_nix-store
+
+
+* 2014-08-29 building
+
+Updated/new files:
+
+pkgs/applications/science/logic/myhol   |
+pkgs/applications/science/logic/hol4k9  |fails with 
+pkgs/applications/science/logic/isabelle|
+
+
+nix-build -A hol4k9 gives
+
+Loading system specific functions
+Compiling system specific functions (sig sml)
+Beginning configuration.
+Making tools/mllex/mllex.exe.
+Poly/ML 5.5.1 Release
+/nix/store/wi8lcasqx0kbabdrdcfymka6r09kp1zh-polyml-5.5.1/lib/libpolyml.a(processes.o): In function `Processes::TestSynchronousRequests(TaskData*)':
+(.text+0x1de): undefined reference to `__cxa_allocate_exception'
+/nix/store/wi8lcasqx0kbabdrdcfymka6r09kp1zh-polyml-5.5.1/lib/libpolyml.a(processes.o): In function `Processes::TestSynchronousRequests(TaskData*)':
+(.text+0x1ed): undefined reference to `__cxa_throw'
+...
+nix/store/wi8lcasqx0kbabdrdcfymka6r09kp1zh-polyml-5.5.1/lib/libpolyml.a(elfexport.o): In function `ELFExport::exportStore()':
+(.text+0x1126): undefined reference to `operator delete[](void*)'
+/nix/store/wi8lcasqx0kbabdrdcfymka6r09kp1zh-polyml-5.5.1/lib/libpolyml.a(elfexport.o):(.rodata._ZTI9ELFExport[_ZTI9ELFExport]+0x0): undefined reference to `vtable for __cxxabiv1::__vmi_class_type_info'
+/nix/store/wi8lcasqx0kbabdrdcfymka6r09kp1zh-polyml-5.5.1/lib/libpolyml.a(elfexport.o):(.eh_frame+0x113): undefined reference to `__gxx_personality_v0'
+collect2: error: ld returned 1 exit status
+Failed to build mllex.
+builder for `/nix/store/wadmgw4jcqnjqvg1hnhcgxshgw4q18l1-hol4-k.9.drv' failed with exit code 1
+error: build of `/nix/store/wadmgw4jcqnjqvg1hnhcgxshgw4q18l1-hol4-k.9.drv' failed
+
+looks like libpoly is built strangely, but it is built normally
+
+so this may be a problem with polyml being too new?
+
+maybe a problem with linking in c++ libraries
+
+
