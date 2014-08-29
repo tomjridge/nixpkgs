@@ -13,7 +13,7 @@ stdenv.mkDerivation rec {
   doCheck = true;
 
   meta = {
-    description = "GNU FreeIPMI, an implementation of the Intelligent Platform Management Interface";
+    description = "Implementation of the Intelligent Platform Management Interface";
 
     longDescription =
       '' GNU FreeIPMI provides in-band and out-of-band IPMI software based on
@@ -31,7 +31,7 @@ stdenv.mkDerivation rec {
 
     homepage = http://www.gnu.org/software/freeipmi/;
 
-    license = "GPLv3+";
+    license = stdenv.lib.licenses.gpl3Plus;
 
     maintainers = with stdenv.lib.maintainers; [ raskin ];
     platforms = stdenv.lib.platforms.gnu;  # arbitrary choice

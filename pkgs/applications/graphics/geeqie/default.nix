@@ -32,7 +32,7 @@ stdenv.mkDerivation rec {
     '';
 
   meta = {
-    description = "Geeqie, a lightweight GTK+ based image viewer";
+    description = "Lightweight GTK+ based image viewer";
 
     longDescription =
       ''
@@ -45,7 +45,7 @@ stdenv.mkDerivation rec {
         initially based on GQview.
       '';
 
-    license = "GPLv2+";
+    license = stdenv.lib.licenses.gpl2Plus;
 
     homepage = http://geeqie.sourceforge.net;
 

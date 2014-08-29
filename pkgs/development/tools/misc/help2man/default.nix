@@ -19,7 +19,7 @@ stdenv.mkDerivation rec {
 
 
   meta = {
-    description = "GNU help2man generates man pages from `--help' output";
+    description = "Generate man pages from `--help' output";
 
     longDescription =
       '' help2man produces simple manual pages from the ‘--help’ and
@@ -28,7 +28,7 @@ stdenv.mkDerivation rec {
 
     homepage = http://www.gnu.org/software/help2man/;
 
-    license = "GPLv3+";
+    license = stdenv.lib.licenses.gpl3Plus;
     platforms = stdenv.lib.platforms.gnu;         # arbitrary choice
     maintainers = [ stdenv.lib.maintainers.ludo ];
   };

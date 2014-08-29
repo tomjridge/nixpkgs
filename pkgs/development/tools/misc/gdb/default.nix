@@ -68,7 +68,7 @@ stdenv.mkDerivation rec {
   doCheck = false;
 
   meta = with stdenv.lib; {
-    description = "GDB, the GNU Project debugger";
+    description = "The GNU Project debugger";
 
     longDescription = ''
       GDB, the GNU Project debugger, allows you to see what is going
@@ -78,7 +78,7 @@ stdenv.mkDerivation rec {
 
     homepage = http://www.gnu.org/software/gdb/;
 
-    license = "GPLv3+";
+    license = stdenv.lib.licenses.gpl3Plus;
 
     platforms = with platforms; linux ++ cygwin ++ darwin;
     maintainers = with maintainers; [ pierron ];

@@ -104,7 +104,6 @@ composableDerivation.composableDerivation {} ( fixed : let inherit (fixed.fixed)
       gd = {
         configureFlags = [
           "--with-gd=${gd}"
-          "--with-freetype-dir=${freetype}"
           "--with-png-dir=${libpng}"
           "--with-jpeg-dir=${libjpeg}"
         ];
@@ -234,13 +233,13 @@ composableDerivation.composableDerivation {} ( fixed : let inherit (fixed.fixed)
   };
 
   meta = {
-    description = "The PHP language runtime engine";
+    description = "An HTML-embedded scripting language";
     homepage    = http://www.php.net/;
     license     = "PHP-3";
     maintainers = with stdenv.lib.maintainers; [ lovek323 ];
     platforms   = stdenv.lib.platforms.unix;
   };
 
-  patches = [./fix.patch];
+  patches = [ ./fix.patch ./5.3-freetype-dirs.patch ];
 
 })

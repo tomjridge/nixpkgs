@@ -14,11 +14,11 @@ stdenv.mkDerivation rec {
   postBuild = "rm -rf $out/share/gtk-doc";
 
   meta = {
-    description = "Clutter-GST";
+    description = "GStreamer bindings for clutter";
 
     homepage = http://www.clutter-project.org/;
 
-    license = "LGPLv2+";
+    license = stdenv.lib.licenses.lgpl2Plus;
 
     maintainers = with stdenv.lib.maintainers; [ lethalman ];
     platforms = stdenv.lib.platforms.gnu;  # arbitrary choice

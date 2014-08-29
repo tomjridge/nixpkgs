@@ -19,7 +19,7 @@ stdenv.mkDerivation (rec {
   '';
 
   meta = {
-    description = "GNU Libgcrypt, a general-pupose cryptographic library";
+    description = "General-pupose cryptographic library";
 
     longDescription = ''
       GNU Libgcrypt is a general purpose cryptographic library based on
@@ -29,7 +29,7 @@ stdenv.mkDerivation (rec {
       functions, random numbers and a lot of supporting functions.
     '';
 
-    license = "LGPLv2+";
+    license = stdenv.lib.licenses.lgpl2Plus;
 
     homepage = http://gnupg.org/;
     platforms = stdenv.lib.platforms.all;
@@ -38,4 +38,3 @@ stdenv.mkDerivation (rec {
   // stdenv.lib.optionalAttrs (stdenv.isFreeBSD && stdenv.isi686)
     { configureFlags = [ "--disable-aesni-support" ]; }
 )
-

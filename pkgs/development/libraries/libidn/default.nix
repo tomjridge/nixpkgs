@@ -12,7 +12,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     homepage = http://www.gnu.org/software/libidn/;
-    description = "GNU Libidn library for internationalized domain names";
+    description = "Library for internationalized domain names";
 
     longDescription = ''
       GNU Libidn is a fully documented implementation of the
@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
       included.
     '';
 
-    license = "LGPLv2+";
+    license = stdenv.lib.licenses.lgpl2Plus;
     platforms = stdenv.lib.platforms.all;
     maintainers = [ ];
   };
