@@ -51,8 +51,9 @@ https://nixos.org/wiki/How_to_add_files_to_the_nix-store
 
 Updated/new files:
 
+pkgs/development/compilers/mypolyml     |builds
 pkgs/applications/science/logic/myhol   |
-pkgs/applications/science/logic/hol4k9  |fails with 
+pkgs/applications/science/logic/hol4k9  |builds with mypolyml
 pkgs/applications/science/logic/isabelle|
 
 
@@ -82,5 +83,23 @@ looks like libpoly is built strangely, but it is built normally
 so this may be a problem with polyml being too new?
 
 maybe a problem with linking in c++ libraries
+--
+
+presumably we can go back to the commit where I added hol49 and build with old poly - no this seems to fail in the same way (because using the new poly)
+
+from hol page: "Note also that Poly/ML 5.5.1 does not work unless installed with the --enable-shared flag. This option must be passed to the invocation of configure that is the first step of building Poly/ML from sources."
+
+so the solution is to fork polyml in nixpkgs, and build with that
+
+--
+
+patched mypolyml and hol4k9; everything now builds fine!
 
 
+something got screwed up when switching branches
+
+trying again...
+
+poly builds fine
+
+same problem with things apparently screwed up, fixed by cd'ing to nixpkgs dir again - possibly git gets confused somehow?

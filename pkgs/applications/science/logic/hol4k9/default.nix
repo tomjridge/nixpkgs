@@ -1,4 +1,4 @@
-{stdenv, fetchurl, polyml, graphviz, fontconfig, liberation_ttf,
+{stdenv, fetchurl, mypolyml, graphviz, fontconfig, liberation_ttf,
  experimentalKernel ? true}:
 
 let
@@ -18,7 +18,7 @@ stdenv.mkDerivation {
     sha256 = "956061c207fcaa7836ae5e8bf379a69e2932e25ccf41d3321c53693e909a9633";
   };
 
-  buildInputs = [polyml graphviz fontconfig liberation_ttf];
+  buildInputs = [mypolyml graphviz fontconfig liberation_ttf];
 
   buildCommand = ''
 

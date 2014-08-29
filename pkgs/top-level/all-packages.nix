@@ -3634,6 +3634,7 @@ let
   pltScheme = racket; # just to be sure
 
   polyml = callPackage ../development/compilers/polyml { };
+  mypolyml = callPackage ../development/compilers/mypolyml { };
 
   pure = callPackage ../development/interpreters/pure {
     llvm = llvm_33 ;
