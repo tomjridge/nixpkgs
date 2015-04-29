@@ -172,4 +172,5 @@ Exception- Io {cause = SysErr ("Permission denied", SOME EACCES), function = "Te
 val it = (): unit
 
     - looks like the premissions of the copied srcs should be relaxed
-    - this looks like it will build
+    - this looks like it will build; it does
+    - to install: nix-env -i ./result
