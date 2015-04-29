@@ -103,3 +103,6 @@ trying again...
 poly builds fine
 
 same problem with things apparently screwed up, fixed by cd'ing to nixpkgs dir again - possibly git gets confused somehow?
+* 2015-04-29 merge with upstream
+
+  - nix-build -A hol4k9 builds fine
