@@ -1,17 +1,16 @@
 { stdenv, fetchurl, pkgconfig
 , autoreconfHook, gettext, expat
 , confuse, vte, gtk
-, makeWrapper
-}:
+, makeWrapper }:
 
 stdenv.mkDerivation rec {
 
   name = "tilda-${version}";
-  version = "1.1.12";
+  version = "1.2.2";
 
   src = fetchurl {
     url = "https://github.com/lanoxx/tilda/archive/${name}.tar.gz";
-    sha256 = "10kjlcdaylkisb8i0cw4wfssg52mrz2lxr5zmw3q4fpnhh2xlaix";
+    sha256 = "1mzly0llsrxpc2yd1hml3gmwm023my2j3aszjw383pp34dab2nl5";
   };
 
   buildInputs = [ pkgconfig autoreconfHook gettext confuse vte gtk makeWrapper ];

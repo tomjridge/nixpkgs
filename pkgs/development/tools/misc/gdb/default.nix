@@ -1,5 +1,5 @@
 { fetchurl, stdenv, ncurses, readline, gmp, mpfr, expat, texinfo
-, dejagnu, python, target ? null
+, dejagnu, python, perl, pkgconfig, guile, target ? null
 
 # Additional dependencies for GNU/Hurd.
 , mig ? null, hurd ? null
@@ -8,7 +8,7 @@
 
 let
 
-  basename = "gdb-7.7";
+  basename = "gdb-7.9";
 
   # Whether (cross-)building for GNU/Hurd.  This is an approximation since
   # having `stdenv ? cross' doesn't tell us if we're building `crossDrv' and
@@ -26,18 +26,18 @@ stdenv.mkDerivation rec {
       ("-" + target.config);
 
   src = fetchurl {
-    url = "mirror://gnu/gdb/${basename}.tar.bz2";
-    sha256 = "08vcb97j1b7vxwq6088wb6s3g3bm8iwikd922y0xsgbbxv3d2104";
+    url = "mirror://gnu/gdb/${basename}.tar.xz";
+    sha256 = "14l3hhsy7fmpn2dk7ivc67gnbjdhkxlq90kxijpzfa35l58mcccv";
   };
 
-  patches = [ ./edit-signals.patch ];
+  # patches = [ ./edit-signals.patch ];
 
   # I think python is not a native input, but I leave it
   # here while I will not need it cross building
-  nativeBuildInputs = [ texinfo python ]
+  nativeBuildInputs = [ texinfo python perl ]
     ++ stdenv.lib.optional isGNU mig;
 
-  buildInputs = [ ncurses readline gmp mpfr expat ]
+  buildInputs = [ ncurses readline gmp mpfr expat /* pkgconfig guile */ ]
     ++ stdenv.lib.optional isGNU hurd
     ++ stdenv.lib.optional doCheck dejagnu;
 
@@ -61,7 +61,7 @@ stdenv.mkDerivation rec {
 
   postInstall =
     '' # Remove Info files already provided by Binutils and other packages.
-       rm -v $out/share/info/{standards,configure,bfd}.info
+       rm -v $out/share/info/bfd.info
     '';
 
   # TODO: Investigate & fix the test failures.

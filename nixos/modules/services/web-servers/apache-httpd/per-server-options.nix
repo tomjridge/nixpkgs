@@ -56,6 +56,13 @@ with lib;
     description = "Path to server SSL certificate key.";
   };
 
+  sslServerChain = mkOption {
+    type = types.nullOr types.path;
+    default = null;
+    example = "/var/ca.pem";
+    description = "Path to server SSL chain file.";
+  };
+
   adminAddr = mkOption ({
     type = types.nullOr types.str;
     example = "admin@example.org";
@@ -90,7 +97,7 @@ with lib;
     default = [];
     example = [
       { urlPath = "/foo/bar.png";
-        dir = "/home/eelco/some-file.png";
+        files = "/home/eelco/some-file.png";
       }
     ];
     description = ''
@@ -142,9 +149,19 @@ with lib;
     type = types.str;
     default = "common";
     example = "combined";
-    description = "
+    description = ''
       Log format for Apache's log files. Possible values are: combined, common, referer, agent.
-    ";
+    '';
+  };
+
+  robotsEntries = mkOption {
+    type = types.lines;
+    default = "";
+    example = "Disallow: /foo/";
+    description = ''
+      Specification of pages to be ignored by web crawlers. See <link
+      xlink:href='http://www.robotstxt.org/'/> for details.
+    '';
   };
 
 }

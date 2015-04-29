@@ -12,6 +12,9 @@ shift
 
 export NIX_LISP NIX_LISP_LOAD_FILE NIX_LISP_EXEC_CODE NIX_LISP_COMMAND NIX_LISP_FINAL_PARAMETERS
 
+test -n "$NIX_LISP_LD_LIBRARY_PATH" &&
+	export LD_LIBRARY_PATH="$LD_LIBRARY_PATH${LD_LIBRARY_PATH+:}$NIX_LISP_LD_LIBRARY_PATH"
+
 case "$NIX_LISP" in
 	sbcl)
 		NIX_LISP_LOAD_FILE="--load"
@@ -36,6 +39,8 @@ NIX_LISP_ASDF_REGISTRY_CODE="
     (asdf:initialize-source-registry)
     )
 "
+
+NIX_LISP_ASDF="${NIX_LISP_ASDF:-@asdf@}"
 
 [ -z "$NIX_LISP_SKIP_CODE" ] && "$NIX_LISP_COMMAND" $NIX_LISP_EARLY_OPTIONS \
 	$NIX_LISP_EXEC_CODE "(load \"$NIX_LISP_ASDF/lib/common-lisp/asdf/build/asdf.lisp\")" \

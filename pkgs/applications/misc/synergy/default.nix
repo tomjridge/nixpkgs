@@ -1,16 +1,19 @@
-{ stdenv, fetchurl, cmake, x11, libX11, libXi, libXtst, libXrandr, xinput, curl
-, cryptopp ? null, unzip }:
+{ stdenv, fetchFromGitHub, cmake, x11, libX11, libXi, libXtst, libXrandr
+, xinput, curl, cryptopp ? null, unzip }:
 
 assert stdenv.isLinux -> cryptopp != null;
 
 with stdenv.lib;
 
 stdenv.mkDerivation rec {
-  name = "synergy-1.5.0";
+  name = "synergy-${version}";
+  version = "1.6.3";
 
-  src = fetchurl {
-    url = "http://synergy-project.org/files/packages/synergy-1.5.0-r2278-Source.tar.gz";
-    sha256 = "097hk9v01lwzs7ly6ynadxmjh7ad68l5si7w4qmjn6z7l8b61gv6";
+  src = fetchFromGitHub {
+    owner = "synergy";
+    repo = "synergy";
+    rev = version;
+    sha256 = "0n4zvz669vi2wyn6i6xhxp0j3nvjl4yzm441cqv6hb0d5k26wbcn";
   };
 
   patches = optional stdenv.isLinux ./cryptopp.patch;

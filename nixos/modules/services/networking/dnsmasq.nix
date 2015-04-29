@@ -11,7 +11,10 @@ let
       conf-file=/etc/dnsmasq-conf.conf
       resolv-file=/etc/dnsmasq-resolv.conf
     ''}
-      ${cfg.extraConfig}
+    ${flip concatMapStrings cfg.servers (server: ''
+      server=${server}
+    '')}
+    ${cfg.extraConfig}
   '';
 
 in
@@ -25,6 +28,7 @@ in
     services.dnsmasq = {
 
       enable = mkOption {
+        type = types.bool;
         default = false;
         description = ''
           Whether to run dnsmasq.
@@ -32,29 +36,29 @@ in
       };
 
       resolveLocalQueries = mkOption {
+        type = types.bool;
         default = true;
         description = ''
           Whether dnsmasq should resolve local queries (i.e. add 127.0.0.1 to
-          /etc/resolv.conf)
+          /etc/resolv.conf).
         '';
       };
 
       servers = mkOption {
+        type = types.listOf types.string;
         default = [];
         example = [ "8.8.8.8" "8.8.4.4" ];
         description = ''
-          The parameter to dnsmasq -S.
+          The DNS servers which dnsmasq should query.
         '';
       };
 
-
-
       extraConfig = mkOption {
-        type = types.string;
+        type = types.lines;
         default = "";
         description = ''
           Extra configuration directives that should be added to
-          <literal>dnsmasq.conf</literal>
+          <literal>dnsmasq.conf</literal>.
         '';
       };
 
@@ -67,8 +71,8 @@ in
 
   config = mkIf config.services.dnsmasq.enable {
 
-    environment.systemPackages = [ dnsmasq ]
-      ++ (if cfg.resolveLocalQueries then [ pkgs.openresolv ] else []);
+    networking.nameservers =
+      optional cfg.resolveLocalQueries "127.0.0.1";
 
     services.dbus.packages = [ dnsmasq ];
 
@@ -80,13 +84,17 @@ in
       };
 
     systemd.services.dnsmasq = {
-        description = "dnsmasq daemon";
-        after = [ "network.target" ];
+        description = "Dnsmasq Daemon";
+        after = [ "network.target" "systemd-resolved.service" ];
         wantedBy = [ "multi-user.target" ];
+        path = [ dnsmasq ];
+        preStart = ''
+          touch /etc/dnsmasq-{conf,resolv}.conf
+          dnsmasq --test
+        '';
         serviceConfig = {
           Type = "dbus";
           BusName = "uk.org.thekelleys.dnsmasq";
-          ExecStartPre = "${dnsmasq}/bin/dnsmasq --test";
           ExecStart = "${dnsmasq}/bin/dnsmasq -k --enable-dbus --user=dnsmasq -C ${dnsmasqConf}";
           ExecReload = "${dnsmasq}/bin/kill -HUP $MAINPID";
         };

@@ -1,15 +1,17 @@
 { stdenv, fetchurl, ncurses }:
 
 stdenv.mkDerivation rec {
-  name = "less-462";
+  name = "less-475";
 
   src = fetchurl {
-    url = http://www.greenwoodsoftware.com/less/less-462.tar.gz;
-    sha256 = "1kv5izyrkds8lkkzd46c9gxsnjgxbr7w4ficzma95dprcn92m97a";
+    url = "http://www.greenwoodsoftware.com/less/${name}.tar.gz";
+    sha256 = "1w7d10h6hzgz5zww8g4aja2fbl7xwx30vd07hcg1fcy7hm8yc1q2";
   };
 
   # Look for ‘sysless’ in /etc.
   configureFlags = "--sysconfdir=/etc";
+
+  preConfigure = "chmod +x ./configure";
 
   buildInputs = [ ncurses ];
 

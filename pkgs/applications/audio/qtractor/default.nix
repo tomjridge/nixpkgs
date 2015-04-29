@@ -1,20 +1,22 @@
 { alsaLib, autoconf, automake, dssi, fetchurl, gtk, jack2
 , ladspaH, ladspaPlugins, liblo, libmad, libsamplerate, libsndfile
-, libtool, libvorbis, pkgconfig, qt4, rubberband, stdenv }:
+, libtool, libvorbis, lilv, lv2, pkgconfig, qt4, rubberband, serd
+, sord, sratom, stdenv, suil }:
 
 stdenv.mkDerivation rec {
-  version = "0.6.2";
+  version = "0.6.6";
   name = "qtractor-${version}";
 
   src = fetchurl {
     url = "mirror://sourceforge/qtractor/${name}.tar.gz";
-    sha256 = "08cr4lgm8bkkmsvfljszcqij3i52n989s7ncrbrn17n61rmgf8yw";
+    sha256 = "1n70hs4bx4hq3cp2p35jq5vlcans4fk2c35w72244vlqlajx05c0";
   };
 
   buildInputs =
     [ alsaLib autoconf automake dssi gtk jack2 ladspaH
       ladspaPlugins liblo libmad libsamplerate libsndfile libtool
-      libvorbis pkgconfig qt4 rubberband
+      libvorbis lilv lv2 pkgconfig qt4 rubberband serd sord sratom
+      suil
     ];
 
   meta = with stdenv.lib; {

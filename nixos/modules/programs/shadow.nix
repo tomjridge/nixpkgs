@@ -83,7 +83,7 @@ in
     security.pam.services =
       { chsh = { rootOK = true; };
         chfn = { rootOK = true; };
-        su = { rootOK = true; forwardXAuth = true; };
+        su = { rootOK = true; forwardXAuth = true; logFailures = true; };
         passwd = {};
         # Note: useradd, groupadd etc. aren't setuid root, so it
         # doesn't really matter what the PAM config says as long as it
@@ -100,8 +100,10 @@ in
         chgpasswd = { rootOK = true; };
       };
 
-    security.setuidPrograms = [ "passwd" "chfn" "su" "newgrp"
-      "newuidmap" "newgidmap"  # new in shadow 4.2.x
+    security.setuidPrograms = [ "su" "chfn" ]
+      ++ lib.optionals config.users.mutableUsers
+      [ "passwd" "sg" "newgrp"
+        "newuidmap" "newgidmap" # new in shadow 4.2.x
       ];
 
   };

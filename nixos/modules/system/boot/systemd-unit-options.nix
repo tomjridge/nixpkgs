@@ -4,15 +4,65 @@ with lib;
 
 let
 
-  checkService = v:
-    let assertValueOneOf = name: values: attr:
-          let val = getAttr name attr;
-          in optional ( hasAttr name attr && !elem val values) "Systemd service field `${name}' cannot have value `${val}'.";
-        checkType = assertValueOneOf "Type" ["simple" "forking" "oneshot" "dbus" "notify" "idle"];
-        checkRestart = assertValueOneOf "Restart" ["no" "on-success" "on-failure" "on-abort" "always"];
-        errors = concatMap (c: c v) [checkType checkRestart];
-    in if errors == [] then true
-       else builtins.trace (concatStringsSep "\n" errors) false;
+  boolValues = [true false "yes" "no"];
+
+  assertValueOneOf = name: values: group: attr:
+    optional (attr ? ${name} && !elem attr.${name} values)
+      "Systemd ${group} field `${name}' cannot have value `${attr.${name}}'.";
+
+  assertHasField = name: group: attr:
+    optional (!(attr ? ${name}))
+      "Systemd ${group} field `${name}' must exist.";
+
+  assertOnlyFields = fields: group: attr:
+    let badFields = filter (name: ! elem name fields) (attrNames attr); in
+    optional (badFields != [ ])
+      "Systemd ${group} has extra fields [${concatStringsSep " " badFields}].";
+
+  assertRange = name: min: max: group: attr:
+    optional (attr ? ${name} && !(min <= attr.${name} && max >= attr.${name}))
+      "Systemd ${group} field `${name}' is outside the range [${toString min},${toString max}]";
+
+  digits = map toString (range 0 9);
+
+  isByteFormat = s:
+    let
+      l = reverseList (stringToCharacters s);
+      suffix = head l;
+      nums = tail l;
+    in elem suffix (["K" "M" "G" "T"] ++ digits)
+      && all (num: elem num digits) nums;
+
+  assertByteFormat = name: group: attr:
+    optional (attr ? ${name} && ! isByteFormat attr.${name})
+      "Systemd ${group} field `${name}' must be in byte format [0-9]+[KMGT].";
+
+  hexChars = stringToCharacters "0123456789abcdefABCDEF";
+
+  isMacAddress = s: stringLength s == 17
+    && flip all (splitString ":" s) (bytes:
+      all (byte: elem byte hexChars) (stringToCharacters bytes)
+    );
+
+  assertMacAddress = name: group: attr:
+    optional (attr ? ${name} && ! isMacAddress attr.${name})
+      "Systemd ${group} field `${name}' must be a valid mac address.";
+
+  checkUnitConfig = group: checks: v:
+    let errors = concatMap (c: c group v) checks; in
+    if errors == [] then true
+      else builtins.trace (concatStringsSep "\n" errors) false;
+
+  checkService = checkUnitConfig "Service" [
+    (assertValueOneOf "Type" [
+      "simple" "forking" "oneshot" "dbus" "notify" "idle"
+    ])
+    (assertValueOneOf "Restart" [
+      "no" "on-success" "on-failure" "on-abnormal" "on-abort" "always"
+    ])
+  ];
+
+in rec {
 
   unitOption = mkOptionType {
     name = "systemd option";
@@ -25,8 +75,6 @@ let
         then concatLists defs''
         else mergeOneOption loc defs';
   };
-
-in rec {
 
   sharedOptions = {
 
@@ -140,6 +188,15 @@ in rec {
       '';
     };
 
+    requisite = mkOption {
+      default = [];
+      type = types.listOf types.str;
+      description = ''
+        Similar to requires. However if the units listed are not started,
+        they will not be started and the transaction will fail.
+      '';
+    };
+
     unitConfig = mkOption {
       default = {};
       example = { RequiresMountsFor = "/data"; };
@@ -227,6 +284,15 @@ in rec {
       description = ''
         Shell commands executed after the service's main process
         is started.
+      '';
+    };
+
+    reload = mkOption {
+      type = types.lines;
+      default = "";
+      description = ''
+        Shell commands executed when the service's main process
+        is reloaded.
       '';
     };
 

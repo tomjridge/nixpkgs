@@ -42,11 +42,7 @@ in
 
   config = mkIf cfg.enable {
 
-    users.extraUsers = singleton
-      { name = "nscd";
-        uid = config.ids.uids.nscd;
-        description = "Name service cache daemon user";
-      };
+    users.extraUsers.nscd.description = "Name service cache daemon user";
 
     systemd.services.nscd =
       { description = "Name Service Cache Daemon";
@@ -62,7 +58,7 @@ in
             mkdir -m 0755 -p /var/db/nscd
           '';
 
-        restartTriggers = [ config.environment.etc.hosts.source ];
+        restartTriggers = [ config.environment.etc.hosts.source config.environment.etc."nsswitch.conf".source ];
 
         serviceConfig =
           { ExecStart = "@${pkgs.glibc}/sbin/nscd nscd -f ${cfgFile}";

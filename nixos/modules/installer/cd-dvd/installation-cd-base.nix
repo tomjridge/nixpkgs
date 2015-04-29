@@ -36,6 +36,9 @@ with lib;
   # EFI booting
   isoImage.makeEfiBootable = true;
 
+  # USB booting
+  isoImage.makeUsbBootable = true;
+
   # Add Memtest86+ to the CD.
   boot.loader.grub.memtest86.enable = true;
 
@@ -43,5 +46,5 @@ with lib;
   boot.initrd.kernelModules = [ "fbcon" ];
 
   # Allow the user to log in as root without a password.
-  security.initialRootPassword = "";
+  users.extraUsers.root.initialHashedPassword = "";
 }

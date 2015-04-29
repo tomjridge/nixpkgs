@@ -16,10 +16,10 @@ stdenv.mkDerivation rec {
     sha256 = "162flbzwzz0b8axab2gimc4dglpaw88fh1d177zfg0whczlpbsln";
   };
 
-  buildInputs = [ flex bison glib pkgconfig python ]
+  buildInputs = [ flex bison pkgconfig python ]
     ++ libintlOrEmpty
     ++ stdenv.lib.optional stdenv.isDarwin otool;
-  propagatedBuildInputs = [ libffi ];
+  propagatedBuildInputs = [ libffi glib ];
 
   # Tests depend on cairo, which is undesirable (it pulls in lots of
   # other dependencies).
@@ -28,6 +28,8 @@ stdenv.mkDerivation rec {
   postInstall = "rm -rf $out/share/gtk-doc";
 
   setupHook = ./setup-hook.sh;
+
+  patches = [ ./absolute_shlib_path.patch ];
 
   meta = with stdenv.lib; {
     description = "A middleware layer between C libraries and language bindings";

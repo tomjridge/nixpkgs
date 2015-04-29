@@ -10,15 +10,18 @@ assert selinuxSupport -> libselinux != null && libsepol != null;
 with { inherit (stdenv.lib) optional optionals optionalString optionalAttrs; };
 
 let
-  self = stdenv.mkDerivation (rec {
-    name = "coreutils-8.21";
+  self = stdenv.mkDerivation rec {
+    name = "coreutils-8.23";
 
     src = fetchurl {
       url = "mirror://gnu/coreutils/${name}.tar.xz";
-      sha256 = "064f512185iysqqcvhnhaf3bfmzrvcgs7n405qsyp99zmfyl9amd";
+      sha256 = "0bdq6yggyl7nkc2pbl6pxhhyx15nyqhz3ds6rfn448n6rxdwlhzc";
     };
 
-    patches = [ ./help2man.patch ];
+    # The test tends to fail on btrfs and maybe other unusual filesystems.
+    postPatch = stdenv.lib.optionalString (!stdenv.isDarwin) ''
+      sed '2i echo Skipping dd sparse test && exit 0' -i ./tests/dd/sparse.sh
+    '';
 
     nativeBuildInputs = [ perl ];
     buildInputs = [ gmp ]
@@ -29,8 +32,8 @@ let
       buildInputs = [ gmp ]
         ++ optional aclSupport acl.crossDrv
         ++ optionals selinuxSupport [ libselinux.crossDrv libsepol.crossDrv ]
-        ++ optional (stdenv.gccCross.libc ? libiconv)
-          stdenv.gccCross.libc.libiconv.crossDrv;
+        ++ optional (stdenv.ccCross.libc ? libiconv)
+          stdenv.ccCross.libc.libiconv.crossDrv;
 
       buildPhase = ''
         make || (
@@ -64,6 +67,8 @@ let
 
     NIX_LDFLAGS = optionalString selinuxSupport "-lsepol";
 
+    makeFlags = optionalString stdenv.isDarwin "CFLAGS=-D_FORTIFY_SOURCE=0";
+
     meta = {
       homepage = http://www.gnu.org/software/coreutils/;
       description = "The basic file, shell and text manipulation utilities of the GNU operating system";
@@ -77,11 +82,11 @@ let
 
       license = stdenv.lib.licenses.gpl3Plus;
 
-      maintainers = [ ];
+      platforms = stdenv.lib.platforms.all;
+
+      maintainers = [ stdenv.lib.maintainers.eelco ];
     };
-  } // optionalAttrs stdenv.isDarwin {
-    makeFlags = "CFLAGS=-D_FORTIFY_SOURCE=0";
-  });
+  };
 in
   self
   // stdenv.lib.optionalAttrs (stdenv.system == "armv7l-linux" || stdenv.isSunOS) {

@@ -37,6 +37,15 @@ in {
     };
   };
 
+  da = buildDict {
+    shortName = "da-1.4.42-1";
+    fullName = "Danish";
+    src = fetchurl {
+      url = mirror://gnu/aspell/dict/da/aspell5-da-1.4.42-1.tar.bz2;
+      sha256 = "1hfkmiyhgrx5lgrb2mffjbdn1hivrm73wcg7x0iid74p2yb0fjpp";
+    };
+  };
+
   de = buildDict {
     shortName = "de-20030222-1";
     fullName = "German";
@@ -175,5 +184,15 @@ in {
       sha256 = "02jwkjhr32kvyibnyzgx3smbnm576jwdzg3avdf6zxwckhy5fw4v";
     };
   };
+
+  sk = buildDict {
+    shortName = "sk-2.01-2";
+    fullName = "Slovak";
+    src = fetchurl {
+      url = mirror://gnu/aspell/dict/sk/aspell6-sk-2.01-2.tar.bz2;
+      sha256 = "19k0m1v5pcf7xr4lxgjkzqkdlks8nyb13bvi1n7521f3i4lhma66";
+    };
+  };
+
 
 }

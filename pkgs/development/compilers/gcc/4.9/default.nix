@@ -9,9 +9,9 @@
 , enableShared ? true
 , texinfo ? null
 , perl ? null # optional, for texi2pod (then pod2man); required for Java
-, gmp, mpfr, mpc, gettext, which
+, gmp, mpfr, libmpc, gettext, which
 , libelf                      # optional, for link-time optimizations (LTO)
-, ppl ? null, cloog ? null, isl ? null # optional, for the Graphite optimization framework.
+, cloog ? null, isl ? null # optional, for the Graphite optimization framework.
 , zlib ? null, boehmgc ? null
 , zip ? null, unzip ? null, pkgconfig ? null, gtk ? null, libart_lgpl ? null
 , libX11 ? null, libXt ? null, libSM ? null, libICE ? null, libXtst ? null
@@ -52,15 +52,12 @@ assert langGo -> langCC;
 with stdenv.lib;
 with builtins;
 
-let version = "4.9.1";
+let version = "4.9.2";
 
     # Whether building a cross-compiler for GNU/Hurd.
     crossGNU = cross != null && cross.config == "i586-pc-gnu";
 
-  /* gccinstall.info says that "parallel make is currently not supported since
-     collisions in profile collecting may occur".
-  */
-    enableParallelBuilding = !profiledCompiler;
+    enableParallelBuilding = true;
 
     patches = [ ]
       ++ optional enableParallelBuilding ./parallel-bconfig.patch
@@ -156,7 +153,6 @@ let version = "4.9.1";
           " --disable-libssp --disable-nls" +
           " --without-headers" +
           " --disable-threads " +
-          " --disable-libmudflap " +
           " --disable-libgomp " +
           " --disable-libquadmath" +
           " --disable-shared" +
@@ -209,7 +205,7 @@ stdenv.mkDerivation ({
 
   src = fetchurl {
     url = "mirror://gnu/gcc/gcc-${version}/gcc-${version}.tar.bz2";
-    sha256 = "0zki3ngi0gsidnmsp88mjl2868cc7cm5wm1vwqw6znja28d7hd6k";
+    sha256 = "1pbjp4blk2ycaa6r3jmw4ky5f1s9ji3klbqgv8zs2sl5jn1cj810";
   };
 
   inherit patches;
@@ -251,11 +247,11 @@ stdenv.mkDerivation ({
            sed -i "${gnu_h}" \
                -es'|#define STANDARD_INCLUDE_DIR.*$|#define STANDARD_INCLUDE_DIR "${libc}/include"|g'
         ''
-    else if cross != null || stdenv.gcc.libc != null then
+    else if cross != null || stdenv.cc.libc != null then
       # On NixOS, use the right path to the dynamic linker instead of
       # `/lib/ld*.so'.
       let
-        libc = if libcCross != null then libcCross else stdenv.gcc.libc;
+        libc = if libcCross != null then libcCross else stdenv.cc.libc;
       in
         '' echo "fixing the \`GLIBC_DYNAMIC_LINKER' and \`UCLIBC_DYNAMIC_LINKER' macros..."
            for header in "gcc/config/"*-gnu.h "gcc/config/"*"/"*.h
@@ -275,8 +271,7 @@ stdenv.mkDerivation ({
     ++ (optional (perl != null) perl)
     ++ (optional javaAwtGtk pkgconfig);
 
-  buildInputs = [ gmp mpfr mpc libelf ]
-    ++ (optional (ppl != null) ppl)
+  buildInputs = [ gmp mpfr libmpc libelf ]
     ++ (optional (cloog != null) cloog)
     ++ (optional (isl != null) isl)
     ++ (optional (zlib != null) zlib)
@@ -294,13 +289,6 @@ stdenv.mkDerivation ({
   NIX_LDFLAGS = stdenv.lib.optionalString  stdenv.isSunOS "-lm -ldl";
 
   preConfigure = ''
-    configureFlagsArray=(
-      ${stdenv.lib.optionalString (ppl != null && ppl ? dontDisableStatic && ppl.dontDisableStatic)
-        "'--with-host-libstdcxx=-lstdc++ -lgcc_s'"}
-      ${stdenv.lib.optionalString (ppl != null && stdenv.isSunOS)
-        "\"--with-host-libstdcxx=-Wl,-rpath,\$prefix/lib/amd64 -lstdc++\"
-         \"--with-boot-ldflags=-L../prev-x86_64-pc-solaris2.11/libstdc++-v3/src/.libs\""}
-    );
     ${stdenv.lib.optionalString (stdenv.isSunOS && stdenv.is64bit)
       ''
         export NIX_LDFLAGS=`echo $NIX_LDFLAGS | sed -e s~$prefix/lib~$prefix/lib/amd64~g`
@@ -322,7 +310,6 @@ stdenv.mkDerivation ({
     ${if enableMultilib then "--disable-libquadmath" else "--disable-multilib"}
     ${if enableShared then "" else "--disable-shared"}
     ${if enablePlugin then "--enable-plugin" else "--disable-plugin"}
-    ${if ppl != null then "--with-ppl=${ppl} --disable-ppl-version-check" else ""}
     ${optionalString (isl != null) "--with-isl=${isl}"}
     ${optionalString (cloog != null) "--with-cloog=${cloog} --disable-cloog-version-check --enable-cloog-backend=isl"}
     ${if langJava then
@@ -336,7 +323,7 @@ stdenv.mkDerivation ({
     ${if langJava && javaAntlr != null then "--with-antlr-jar=${javaAntlr}" else ""}
     --with-gmp=${gmp}
     --with-mpfr=${mpfr}
-    --with-mpc=${mpc}
+    --with-mpc=${libmpc}
     ${if libelf != null then "--with-libelf=${libelf}" else ""}
     --disable-libstdcxx-pch
     --without-included-gettext
@@ -398,12 +385,11 @@ stdenv.mkDerivation ({
     NM_FOR_TARGET = "${stdenv.cross.config}-nm";
     CXX_FOR_TARGET = "${stdenv.cross.config}-g++";
     # If we are making a cross compiler, cross != null
-    NIX_GCC_CROSS = if cross == null then "${stdenv.gccCross}" else "";
+    NIX_CC_CROSS = if cross == null then "${stdenv.ccCross}" else "";
     dontStrip = true;
     configureFlags = ''
       ${if enableMultilib then "" else "--disable-multilib"}
       ${if enableShared then "" else "--disable-shared"}
-      ${if ppl != null then "--with-ppl=${ppl.crossDrv}" else ""}
       ${if cloog != null then "--with-cloog=${cloog.crossDrv} --enable-cloog-backend=isl" else ""}
       ${if langJava then "--with-ecj-jar=${javaEcj.crossDrv}" else ""}
       ${if javaAwtGtk then "--enable-java-awt=gtk" else ""}
@@ -489,7 +475,7 @@ stdenv.mkDerivation ({
     else null;
 
   passthru =
-    { inherit langC langCC langAda langFortran langVhdl langGo enableMultilib version; };
+    { inherit langC langCC langAda langFortran langVhdl langGo enableMultilib version; isGNU = true; };
 
   inherit enableParallelBuilding;
 
@@ -508,9 +494,8 @@ stdenv.mkDerivation ({
       compiler used in the GNU system including the GNU/Linux variant.
     '';
 
-    maintainers = with stdenv.lib.maintainers; [ ludo viric shlevy simons ];
+    maintainers = with stdenv.lib.maintainers; [ viric shlevy simons ];
 
-    # Volunteers needed for the {Cyg,Dar}win ports of *PPL.
     # gnatboot is not available out of linux platforms, so we disable the darwin build
     # for the gnat (ada compiler).
     platforms =
@@ -527,4 +512,6 @@ stdenv.mkDerivation ({
 
 # Strip kills static libs of other archs (hence cross != null)
 // optionalAttrs (!stripped || cross != null) { dontStrip = true; NIX_STRIP_DEBUG = 0; }
+
+// optionalAttrs (enableMultilib) { dontMoveLib64 = true; }
 )

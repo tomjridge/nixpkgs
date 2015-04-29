@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, less }:
+{ stdenv, fetchurl }:
 
 stdenv.mkDerivation rec {
   name = "gzip-1.6";
@@ -28,6 +28,8 @@ stdenv.mkDerivation rec {
         and we needed a replacement.  The superior compression ratio of gzip
         is just a bonus.
       '';
+
+    platforms = stdenv.lib.platforms.all;
 
     license = stdenv.lib.licenses.gpl3Plus;
   };

@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, qt4, boost, protobuf
+{ stdenv, qt4, boost, protobuf, mumble
 , avahi, libcap, pkgconfig
 , iceSupport ? false
 , zeroc_ice ? null
@@ -11,13 +11,9 @@ let
   optionalString = stdenv.lib.optionalString;
 in
 stdenv.mkDerivation rec {
-  name = "murmur-" + version;
-  version = "1.2.6";
+  name = "murmur-${version}";
 
-  src = fetchurl {
-    url = "mirror://sourceforge/mumble/mumble-${version}.tar.gz";
-    sha256 = "1zxnbwbd81p7lvscghlpkad8kynh9gbf1nhc092sp64pp37xwv47";
-  };
+  inherit (mumble) version src;
 
   patchPhase = optional iceSupport ''
     sed -i 's,/usr/share/Ice/,${zeroc_ice}/,g' src/murmur/murmur.pro

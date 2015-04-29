@@ -1,6 +1,7 @@
 { stdenv, fetchurl, makeDesktopItem, makeWrapper
 , freetype, fontconfig, libX11, libXext, libXrender, zlib
 , glib, gtk, libXtst, jre
+, webkitgtk2 ? null  # for internal web browser
 }:
 
 assert stdenv ? glibc;
@@ -44,7 +45,7 @@ let
         
         makeWrapper $out/eclipse/eclipse $out/bin/eclipse \
           --prefix PATH : ${jre}/bin \
-          --prefix LD_LIBRARY_PATH : ${glib}/lib:${gtk}/lib:${libXtst}/lib \
+          --prefix LD_LIBRARY_PATH : ${glib}/lib:${gtk}/lib:${libXtst}/lib${stdenv.lib.optionalString (webkitgtk2 != null) ":${webkitgtk2}/lib"} \
           --add-flags "-configuration \$HOME/.eclipse/''${productId}_$productVersion/configuration"
 
         # Create desktop item.
@@ -94,6 +95,22 @@ in {
         fetchurl {
           url = http://archive.eclipse.org/eclipse/downloads/drops/R-3.6.2-201102101200/eclipse-SDK-3.6.2-linux-gtk.tar.gz;
           sha256 = "1bh8ykliqr8wbciv13vpiy50rvm7yszk7y8dslr796dbwhi5b1cj";
+        };
+  };
+
+  eclipse_scala_sdk_40 = buildEclipse {
+    name = "eclipse-scala_sdk-4.0.0";
+    description = "Eclipse IDE for Scala Developers";
+    src =
+      if stdenv.system == "x86_64-linux" then
+        fetchurl { # tested
+          url = http://downloads.typesafe.com/scalaide-pack/4.0.0.vfinal-luna-211-20150305/scala-SDK-4.0.0-vfinal-2.11-linux.gtk.x86_64.tar.gz;
+          sha256  = "b65c5e8160e72c8389537e9e427138e6daa2065f9df3a943a86e40dd1543dd83";
+        }
+      else
+        fetchurl { # untested
+          url = http://downloads.typesafe.com/scalaide-pack/4.0.0.vfinal-luna-211-20150305/scala-SDK-4.0.0-vfinal-2.11-linux.gtk.x86.tar.gz;
+          sha256 = "f422aea5903c97d212264a5a43c6ebc638aecbd4ce5e6078d92618725bc5d31e";
         };
   };
 
@@ -191,6 +208,23 @@ in {
           sha256 = "0d6jlj7hwz8blx6csrlyi2h2prql0wckbh7ihwjmgclwpcpj84g6";
         };
   };
+  
+   eclipse_cpp_44 = buildEclipse {
+    name = "eclipse-cpp-4.4";
+    description = "Eclipse IDE for C/C++ Developers";
+    src =
+      if stdenv.system == "x86_64-linux" then
+        fetchurl {
+          url = http://www.mirrorservice.org/sites/download.eclipse.org/eclipseMirror/technology/epp/downloads/release/luna/R/eclipse-cpp-luna-R-linux-gtk-x86_64.tar.gz;
+          md5 = "b0a6ee33e8108a7ff4682ab911271b04";
+        }
+      else
+        fetchurl {
+          url = http://www.mirrorservice.org/sites/download.eclipse.org/eclipseMirror/technology/epp/downloads/release/luna/R/eclipse-cpp-luna-R-linux-gtk.tar.gz;
+          md5 = "5000f93cecf6ef9af112f0df6e8c87f3";
+        };
+  };
+
 
   eclipse_sdk_421 = buildEclipse {
     name = "eclipse-sdk-4.2.1";
@@ -228,11 +262,11 @@ in {
     description = "Eclipse Classic";
     sources = {
       "x86_64-linux" = fetchurl {
-          url = http://download.eclipse.org/eclipse/downloads/drops4/R-4.3.1-201309111000/eclipse-SDK-4.3.1-linux-gtk-x86_64.tar.gz;
+          url = http://archive.eclipse.org/eclipse/downloads/drops4/R-4.3.1-201309111000/eclipse-SDK-4.3.1-linux-gtk-x86_64.tar.gz;
           sha256 = "0ncm56ylwxw9z8rk8ccgva68c2yr9yrf1kcr1zkgw6p87xh1yczd";
         };
       "i686-linux" = fetchurl {
-          url = http://download.eclipse.org/eclipse/downloads/drops4/R-4.3.1-201309111000/eclipse-SDK-4.3.1-linux-gtk.tar.gz;
+          url = http://archive.eclipse.org/eclipse/downloads/drops4/R-4.3.1-201309111000/eclipse-SDK-4.3.1-linux-gtk.tar.gz;
           sha256 = "1zxsh838khny7mvl01h28xna6xdh01yi4mvls28zj22v0340lgsg";
         };
     };
@@ -243,14 +277,29 @@ in {
     description = "Eclipse Classic";
     sources = {
       "x86_64-linux" = fetchurl {
-          url = http://download.eclipse.org/eclipse/downloads/drops4/R-4.4-201406061215/eclipse-SDK-4.4-linux-gtk-x86_64.tar.gz;
+          url = http://archive.eclipse.org/eclipse/downloads/drops4/R-4.4-201406061215/eclipse-SDK-4.4-linux-gtk-x86_64.tar.gz;
           sha256 = "14hdkijsjq0hhzi9ijpwjjkhz7wm0pry86l3dniy5snlh3l5bsb2";
         };
       "i686-linux" = fetchurl {
-          url = http://download.eclipse.org/eclipse/downloads/drops4/R-4.4-201406061215/eclipse-SDK-4.4-linux-gtk.tar.gz;
+          url = http://archive.eclipse.org/eclipse/downloads/drops4/R-4.4-201406061215/eclipse-SDK-4.4-linux-gtk.tar.gz;
           sha256 = "0hjc4zrsmik6vff851p0a4ydnx99840j2xrx8348kk6h0af8vx6z";
         };
     };
   };
 
+  eclipse_sdk_442 = buildEclipse {
+    name = "eclipse-sdk-4.4.2";
+    description = "Eclipse Classic";
+    sources = {
+      "x86_64-linux" = fetchurl {
+          url = http://download.eclipse.org/eclipse/downloads/drops4/R-4.4.2-201502041700/eclipse-SDK-4.4.2-linux-gtk-x86_64.tar.gz;
+          sha256 = "0g00alsixfaakmn4khr0m9fxvkrbhbg6qqfa27xr6a9np6gzg98l";
+
+        };
+      "i686-linux" = fetchurl {
+          url = http://download.eclipse.org/eclipse/downloads/drops4/R-4.4.2-201502041700/eclipse-SDK-4.4.2-linux-gtk.tar.gz;
+          sha256 = "9f4238ce9f887a1a57bbc6c6898e43357d14a6d74f59385327813c5e82aa735d";
+        };
+    };
+  };
 }

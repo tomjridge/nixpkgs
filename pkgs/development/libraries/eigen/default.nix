@@ -1,15 +1,15 @@
 {stdenv, fetchurl, cmake}:
 
 let
-  v = "3.2.1";
+  version = "3.2.4";
 in
 stdenv.mkDerivation {
-  name = "eigen-${v}";
+  name = "eigen-${version}";
   
   src = fetchurl {
-    url = "http://bitbucket.org/eigen/eigen/get/${v}.tar.bz2";
-    name = "eigen-${v}.tar.bz2";
-    sha256 = "12ljdirih9n3cf8hy00in285c2ccah7mgalmmr8gc3ldwznz5rk6";
+    url = "http://bitbucket.org/eigen/eigen/get/${version}.tar.gz";
+    name = "eigen-${version}.tar.gz";
+    sha256 = "19c6as664a3kxvkhas2cq19r6ag19jw9lcz04sc0kza6i1hlh9xv";
   };
   
   nativeBuildInputs = [ cmake ];
@@ -18,6 +18,8 @@ stdenv.mkDerivation {
     description = "C++ template library for linear algebra: vectors, matrices, and related algorithms";
     license = licenses.lgpl3Plus;
     homepage = http://eigen.tuxfamily.org ;
+    platforms = platforms.unix;
     maintainers = with stdenv.lib.maintainers; [ sander urkud raskin ];
+    inherit version;
   };
 }
