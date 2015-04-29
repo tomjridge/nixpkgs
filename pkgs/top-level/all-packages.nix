@@ -13657,6 +13657,7 @@ let
   ### myhol = callPackage ../applications/science/logic/myhol { };
 
   hol4k9 = callPackage ../applications/science/logic/hol4k9 { };
+  hol4k10 = callPackage ../applications/science/logic/hol4k10 { };
 
   hol_light = callPackage ../applications/science/logic/hol_light {
     inherit (ocamlPackages) findlib;

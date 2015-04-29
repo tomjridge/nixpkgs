@@ -106,3 +106,70 @@ same problem with things apparently screwed up, fixed by cd'ing to nixpkgs dir a
 * 2015-04-29 merge with upstream
 
   - nix-build -A hol4k9 builds fine
+
+* 2015-04-29 update for hol4k10
+
+  - pkgs/applications/science/logic/hol4k10
+  - change src to use fetchgit
+    - logic/coq/HEAD.nix has an example
+      - where does sha256 come from? why isn't this just the commit rev?
+        - http://comments.gmane.org/gmane.linux.distributions.nixos/12143
+        - use nix-prefetch-git utility
+          - we dont' have this; need to update nix itself
+        - nix-env -i nix-prefetch-scripts
+        - nix-prefetch-git --url https://github.com/HOL-Theorem-Prover/HOL/ --rev HEAD
+          - fatal: unable to access 'https://github.com/HOL-Theorem-Prover/HOL/': SSL certificate problem: unable to get local issuer certificate
+          - probably because this is using nix git which can't 
+          - https://github.com/NixOS/nixpkgs/issues/3382
+          - following first suggestion
+          - export GIT_SSL_CAINFO=$HOME/.nix-profile/etc/ca-bundle.crt
+          - nix prefetch works!
+    - https://github.com/HOL-Theorem-Prover/HOL/
+    - k10 commit is 7fcca392d98b86bf480b76844e42d6e1e61d1fd2
+    - nix-build -A hol4k10 fails
+
+git revision is 7fcca392d98b86bf480b76844e42d6e1e61d1fd2
+git human-readable version is -- none --
+Commit date is 2014-11-10 15:37:02 +1100
+removing `.git'...
+building path(s) ‘/nix/store/2drb28zhq7wfyip905bxmwd0yflhi2f8-hol4-k.10’
+tar (child): /nix/store/gaidmy0xwvf0w5lm5qhd94g1b02y0fxc-HOL-7fcca39: Cannot read: Is a directory
+tar (child): At beginning of tape, quitting now
+tar (child): Error is not recoverable: exiting now
+
+gzip: stdin: unexpected end of file
+tar: Child returned status 2
+tar: Error is not recoverable: exiting now
+builder for ‘/nix/store/1as9lbmcslpih6bi0xqviv31vlqidc81-hol4-k.10.drv’ failed with exit code 2
+
+
+    - nix-build --keep-failed
+    - debugging following https://nixos.org/wiki/Debugging_a_Nix_Package
+    - we have a buildCommand which presumably overrides all inbuilt phases
+    - after debugging, fail because of an attempt to write to the store:
+ls 
+Determining configuration parameters: holdir OS poly polymllibdir 
+OS:                 linux
+poly:               /nix/store/wcfyz07axlqa8lid1xyf9rpygr4kgwgs-mypolyml-5.5.1/bin/poly
+polymllibdir:       /nix/store/wcfyz07axlqa8lid1xyf9rpygr4kgwgs-mypolyml-5.5.1/lib
+holdir:             /nix/store/0fmhx2ilwdkl0bzn0baysb403crqjl6k-hol4-k.10/src/HOL-7fcca39
+DOT_PATH:           /usr/bin/dot
+
+Configuration will begin with above values.  If they are wrong
+press Control-C.
+
+Will continue in 1 seconds.
+
+Loading system specific functions
+Exception- Io {cause = SysErr ("Permission denied", SOME EACCES), function = "TextIO.openOut", name = "/nix/store/0fmhx2ilwdkl0bzn0baysb403crqjl6k-hol4-k.10/src/HOL-7fcca39/tools-poly/Holmake/Systeml.sml"} raised
+Exception- Io {cause = SysErr ("Permission denied", SOME EACCES), function = "TextIO.openOut", name = "/nix/store/0fmhx2ilwdkl0bzn0baysb403crqjl6k-hol4-k.10/src/HOL-7fcca39/tools-poly/Holmake/Systeml.sml"} raised
+
+
+** You must do
+     poly < tools/smart-configure.sml
+** from the root HOL directory
+
+val it = (): unit
+
+    - looks like the premissions of the copied srcs should be relaxed
+    - this looks like it will build
