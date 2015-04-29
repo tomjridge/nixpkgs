@@ -3354,6 +3354,7 @@ let
 
     opam_1_0_0 = callPackage ../development/tools/ocaml/opam/1.0.0.nix { };
     opam_1_1 = callPackage ../development/tools/ocaml/opam/1.1.nix { };
+    ### opam_1_2 = callPackage ../development/tools/ocaml/opam/1.2.nix { };
     opam = opam_1_1;
 
     sawja = callPackage ../development/ocaml-modules/sawja { };
@@ -10976,7 +10977,7 @@ let
 
   hol = callPackage ../applications/science/logic/hol { };
 
-  myhol = callPackage ../applications/science/logic/myhol { };
+  ### myhol = callPackage ../applications/science/logic/myhol { };
 
   hol4k9 = callPackage ../applications/science/logic/hol4k9 { };
 
