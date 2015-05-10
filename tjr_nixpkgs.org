@@ -174,3 +174,24 @@ val it = (): unit
     - looks like the premissions of the copied srcs should be relaxed
     - this looks like it will build; it does
     - to install: nix-env -i ./result
+* 2015-05-10 nixpkgs and ocaml and createFindlibDestdir
+
+  - pkgs/development/tools/ocaml/findlib/default.nix
+  - eg ocaml-base64 installed in ~/.nix-profile/lib/ocaml/4.01.0/site-lib/base64/  (since nix presumably on 4.01.0)
+  - nix-env -i ocaml gets 4.02.1
+  - but ocaml-base64 reinstall doesn't seem to pick up 
+  - having upgraded ocaml, how to upgrade findlib packages?
+  - why does nix-env -i ocaml install 4.02.1 instead of default 4.01.0?
+    - because we are using the system packages, not super/nixpkgs
+  - warning: there are multiple derivations named ‘ocaml-findlib-1.5.3’; using the first one
+    - probably we need to select by attribute rather than name
+    - nix-env man page: To find out the attribute  paths of available packages, use nix-env -qaP ´*´.
+    - nix-env -i -A nixpkgs.ocamlPackages.findlib installs a particular version of findlib, but looks like still 4.01.0
+    - where is the nixpkgs that are being used by the system?
+      - ~/.nix-defexpr/channels/nixpkgs
+      - ~/.nix-defexpr/channels/nixpkgs/pkgs/top-level/all-packages.nix
+    - when we ask for all attributes, why can't we see variants of ocaml packages for 4.01, 4.02 etc?
+      - eg nixpkgs.ocamlPackages_4_02_1.ocaml-base64
+      - there is only nixpkgs.ocamlPackages
+      - but nix-env -i -A nixpkgs.ocamlPackages_latest.base64 works and installs 4.02.1 libs
+      - https://nixos.org/wiki/Howto_find_a_package_in_NixOS suggests using nox to search for packages, but this doesn't seem to show ocamlPackages_latest etc
