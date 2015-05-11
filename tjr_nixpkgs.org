@@ -195,3 +195,5 @@ val it = (): unit
       - there is only nixpkgs.ocamlPackages
       - but nix-env -i -A nixpkgs.ocamlPackages_latest.base64 works and installs 4.02.1 libs
       - https://nixos.org/wiki/Howto_find_a_package_in_NixOS suggests using nox to search for packages, but this doesn't seem to show ocamlPackages_latest etc
+
+* 2015-05-11 nix-shell and ocaml for development env in ocamlenv.nix
