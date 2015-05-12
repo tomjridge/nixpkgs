@@ -206,4 +206,45 @@ val it = (): unit
   - add to ocamlenv
     - need to modify NIX_PATH to work with local fork https://nixos.org/wiki/Nix_Modifying_Packages
     - shell shows p3 and base64 both present
-  - what about a standalone nix expression in the repo itself (to control build)
+  - what about a standalone nix expression in the repo itself (to control build)? default.nix in p3 repo
+  - how easy is it to install nix then install p3 starting from a blank ubuntu image?
+    - sudo docker run -i -t  ubuntu:14.04 /bin/bash
+    - sudo apt-get update
+    - sudo apt-get install curl
+    - curl https://nixos.org/nix/install | sh
+      - need to be non-root; using dockertest repo, editing mini_ubuntu
+    - inside docket:
+      - curl https://nixos.org/nix/install | sh
+      - nix-binary-tarball-unpack/nix-1.8-x86_64-linux/install: $USER is not set
+        - export USER=opam fixes this
+      - even though I am the opam user
+    - . /home/opam/.nix-profile/etc/profile.d/nix.sh
+    - cd /tmp/l/github/super/p3
+    - nix-build pulls in everything
+    - nix-shell in p3, followed by make, make install; install seems
+      to work, but ocamlfind list doesn't show; this is because make
+      install puts the libs in the nix store, but they are not merged
+      into the user environment
+    - building from scratch
+
+
+  - sometimes get the following error when nix-building in p3:
+make[2]: Leaving directory '/tmp/nix-build-p3.drv-0/p3/examples/actions'
+/tmp/nix-build-p3.drv-0/p3/examples/../build/earley3_main.native -g grammars/E_EEE.g -f inputs/1_0010.txt
+Done items: -1
+ocamlbuild -I lexer arith.ml
+/nix/store/9a0xlgqq1yc67radpkfmavy59lp547rg-ocaml-4.02.1/bin/ocamllex.opt -q lexer/arith.mll
+ocamlbuild -I lexer -cflags '-I /tmp/nix-build-p3.drv-0/p3/examples/../build' -lflags '-I /tmp/nix-build-p3.drv-0/p3/examples/../build p3.cma' lexer_main.byte
+Exception
+  Sys_error("/tmp/nix-build-p3.drv-0/p3/examples/lexer_main.byte: No such file or directory").
+Makefile:19: recipe for target 'lexer' failed
+make[1]: *** [lexer] Error 100
+make[1]: Leaving directory '/tmp/nix-build-p3.drv-0/p3/examples'
+Makefile:2: recipe for target 'all' failed
+make: *** [all] Error 2
+builder for ‘/nix/store/70sz72xcbz26n0lkh1z905snfnxkaxxz-p3.drv’ failed with exit code 2
+error: build of ‘/nix/store/70sz72xcbz26n0lkh1z905snfnxkaxxz-p3.drv’ failed
+  - in examples/, make lexer fails
+  - seems to be some old files handing around
+  - in docker, a clean pull from github would be preferable to
+    mounting local dirs which may have cruft, but this means we have to give the sha each time
