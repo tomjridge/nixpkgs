@@ -248,3 +248,9 @@ error: build of ‘/nix/store/70sz72xcbz26n0lkh1z905snfnxkaxxz-p3.drv’ failed
   - seems to be some old files handing around
   - in docker, a clean pull from github would be preferable to
     mounting local dirs which may have cruft, but this means we have to give the sha each time
+
+* 2015-05-12 using nix to test multiple software versions
+
+  - eg suppose we want to test the main and dev versions
+  - this works fine in p3/default.nix (p3_2014-04-30)
+  - we also want to copy all the build and examples into the destination directory
