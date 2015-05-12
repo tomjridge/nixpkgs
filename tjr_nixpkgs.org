@@ -197,3 +197,13 @@ val it = (): unit
       - https://nixos.org/wiki/Howto_find_a_package_in_NixOS suggests using nox to search for packages, but this doesn't seem to show ocamlPackages_latest etc
 
 * 2015-05-11 nix-shell and ocaml for development env in ocamlenv.nix
+* 2015-05-12 packaging p3 on nix
+
+  - added to all-packages.nix
+  - added p3 dir, with default.nix
+  - nix-build -A ocamlPackages.p3
+    - works ok
+  - add to ocamlenv
+    - need to modify NIX_PATH to work with local fork https://nixos.org/wiki/Nix_Modifying_Packages
+    - shell shows p3 and base64 both present
+  - what about a standalone nix expression in the repo itself (to control build)

@@ -4233,6 +4233,8 @@ let
       inherit pcre;
     };
 
+    p3 = callPackage ../development/ocaml-modules/p3 {};
+
     pgocaml = callPackage ../development/ocaml-modules/pgocaml {};
 
     ocaml_react = callPackage ../development/ocaml-modules/react { };
