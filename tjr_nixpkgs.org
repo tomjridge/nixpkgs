@@ -254,3 +254,19 @@ error: build of ‘/nix/store/70sz72xcbz26n0lkh1z905snfnxkaxxz-p3.drv’ failed
   - eg suppose we want to test the main and dev versions
   - this works fine in p3/default.nix (p3_2014-04-30)
   - we also want to copy all the build and examples into the destination directory
+
+* 2015-06-11 trying to add new scala eclipse version 4.1
+
+  - need to hash file
+  - nix-prefetch-url http://downloads.typesafe.com/scalaide-pack/4.1.0-vfinal-luna-211-20150525/scala-SDK-4.1.0-vfinal-2.11-linux.gtk.x86_64.tar.gz
+    - curl: (23) Failed writing body (1713 != 5472)
+/home/tr61/.nix-profile/bin/nix-prefetch-url: download of ‘http://downloads.typesafe.com/scalaide-pack/4.1.0-vfinal-luna-211-20150525/scala-SDK-4.1.0-vfinal-2.11-linux.gtk.x86_64.tar.gz’ failed
+  - nix-prefetch-url file:///home/tr61/Downloads/scala-SDK-4.1.0-vfinal-2.11-linux.gtk.x86_64.tar.gz
+    - same error
+  - https://github.com/NixOS/nixpkgs/issues/6828
+    - use sha256sum
+
+
+  - added to super/nixpkgs
+  - nix-build -A eclipses.eclipse_scala_sdk_41
+  - nix-env -i ./result
