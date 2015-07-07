@@ -270,3 +270,7 @@ error: build of ‘/nix/store/70sz72xcbz26n0lkh1z905snfnxkaxxz-p3.drv’ failed
   - added to super/nixpkgs
   - nix-build -A eclipses.eclipse_scala_sdk_41
   - nix-env -i ./result
+* 2015-07-06 packaging mycsv
+
+  - want to make a static version of mycsv, including p1 dependencies
+    - just copy and paste the p1 default.nix into .nix/2015-07-06.nix
