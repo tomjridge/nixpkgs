@@ -16,6 +16,12 @@ pkgs/applications/science/logic/isabelle|ok for isa2013 - needs updating, but pr
 
 merge changes from upstream: https://help.github.com/articles/fork-a-repo
 
+https://help.github.com/articles/syncing-a-fork/
+
+git fetch upstream
+
+git merge upstream/master
+
 --
 
 Checkout nixpkgs from github
