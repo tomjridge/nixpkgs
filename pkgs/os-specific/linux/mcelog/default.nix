@@ -1,11 +1,11 @@
 { stdenv, fetchFromGitHub }:
 
-let version = "116"; in
+let version = "121"; in
 stdenv.mkDerivation {
   name = "mcelog-${version}";
 
   src = fetchFromGitHub {
-    sha256 = "0nr3b924ardz9c1skna8finrjq22ac2vihp3zck9jixc9d5mvrmf";
+    sha256 = "1psdcbr3ssavl35svjzgsy5xl0f2s57s740anvyqy8ziy4k5fjyv";
     rev = "v${version}";
     repo = "mcelog";
     owner = "andikleen";
@@ -24,7 +24,7 @@ stdenv.mkDerivation {
     inherit version;
     description = "Log machine checks (memory, IO, and CPU hardware errors)";
     homepage = http://mcelog.org/;
-    license = with licenses; gpl2;
+    license = licenses.gpl2;
     maintainers = with maintainers; [ nckx ];
   };
 }

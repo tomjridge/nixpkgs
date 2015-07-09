@@ -2,13 +2,17 @@
 , pkgconfig, runCommand, which, unstableVersion ? false
 }:
 
+# nodejs 0.12 can't be built on armv5tel. Armv6 with FPU, minimum I think.
+# Related post: http://zo0ok.com/techfindings/archives/1820
+assert stdenv.system != "armv5tel-linux";
+
 let
   dtrace = runCommand "dtrace-native" {} ''
     mkdir -p $out/bin
     ln -sv /usr/sbin/dtrace $out/bin
   '';
 
-  version = "0.12.0";
+  version = "0.12.6";
 
   deps = {
     inherit openssl zlib libuv;
@@ -32,7 +36,7 @@ in stdenv.mkDerivation {
 
   src = fetchurl {
     url = "http://nodejs.org/dist/v${version}/node-v${version}.tar.gz";
-    sha256 = "0cifd2qhpyrbxx71a4hsagzk24qas8m5zvwcyhx69cz9yhxf404p";
+    sha256 = "1llsl7zl3080zd7jfhhy4d5s9pnhr15niw6vivp9sflpa71mlfvs";
   };
 
   configureFlags = concatMap sharedConfigureFlags (builtins.attrNames deps);
@@ -43,9 +47,6 @@ in stdenv.mkDerivation {
 
   patches = if stdenv.isDarwin then [ ./no-xcode.patch ] else null;
 
-  postPatch = if stdenv.isDarwin then ''
-    (cd tools/gyp; patch -Np1 -i ${../../python-modules/gyp/no-darwin-cflags.patch})
-  '' else null;
 
   buildInputs = [ python which ]
     ++ (optional stdenv.isLinux utillinux)
@@ -58,7 +59,7 @@ in stdenv.mkDerivation {
     description = "Event-driven I/O framework for the V8 JavaScript engine";
     homepage = http://nodejs.org;
     license = licenses.mit;
-    maintainers = [ maintainers.goibhniu maintainers.shlevy ];
+    maintainers = [ maintainers.goibhniu maintainers.havvy ];
     platforms = platforms.linux ++ platforms.darwin;
   };
 }
