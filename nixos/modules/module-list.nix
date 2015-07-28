@@ -131,6 +131,7 @@
   ./services/databases/opentsdb.nix
   ./services/databases/postgresql.nix
   ./services/databases/redis.nix
+  ./services/databases/riak.nix
   ./services/databases/virtuoso.nix
   ./services/desktops/accountsservice.nix
   ./services/desktops/geoclue2.nix
@@ -189,6 +190,7 @@
   ./services/misc/cpuminer-cryptonight.nix
   ./services/misc/cgminer.nix
   ./services/misc/confd.nix
+  ./services/misc/devmon.nix
   ./services/misc/dictd.nix
   ./services/misc/disnix.nix
   ./services/misc/docker-registry.nix
@@ -286,6 +288,7 @@
   ./services/networking/gogoclient.nix
   ./services/networking/gvpe.nix
   ./services/networking/haproxy.nix
+  ./services/networking/heyefi.nix
   ./services/networking/hostapd.nix
   ./services/networking/i2pd.nix
   ./services/networking/i2p.nix

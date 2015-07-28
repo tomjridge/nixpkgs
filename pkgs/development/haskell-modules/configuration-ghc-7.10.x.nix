@@ -44,10 +44,6 @@ self: super: {
   # Don't use jailbreak built with Cabal 1.22.x because of https://github.com/peti/jailbreak-cabal/issues/9.
   jailbreak-cabal = pkgs.haskell.packages.ghc784.jailbreak-cabal;
 
-  # GHC 7.10.x's Haddock binary cannot generate hoogle files.
-  # https://ghc.haskell.org/trac/ghc/ticket/9921
-  mkDerivation = drv: super.mkDerivation (drv // { doHoogle = false; });
-
   idris =
     let idris' = overrideCabal super.idris (drv: {
       # "idris" binary cannot find Idris library otherwise while building.
@@ -120,9 +116,6 @@ self: super: {
     url = "https://github.com/chrisdone/present/commit/6a61f099bf01e2127d0c68f1abe438cd3eaa15f7.patch";
     sha256 = "1vn3xm38v2f4lzyzkadvq322f3s2yf8c88v56wpdpzfxmvlzaqr8";
   });
-
-  # Already applied in darcs repository.
-  gnuplot = appendPatch super.gnuplot ./gnuplot-fix-new-time.patch;
 
   ghcjs-prim = self.callPackage ({ mkDerivation, fetchgit, primitive }: mkDerivation {
     pname = "ghcjs-prim";
@@ -231,9 +224,6 @@ self: super: {
   seqid-streams_0_1_0 = markBroken super.seqid-streams_0_1_0;
   vector_0_10_9_3 = markBroken super.vector_0_10_9_3;
 
-  # https://github.com/purefn/hipbot/issues/1
-  hipbot = dontDistribute super.hipbot;
-
   # https://github.com/HugoDaniel/RFC3339/issues/14
   timerep = dontCheck super.timerep;
 
@@ -271,5 +261,12 @@ self: super: {
 
   # Won't work with LLVM 3.5.
   llvm-general = markBrokenVersion "3.4.5.3" super.llvm-general;
+
+  # Inexplicable haddock failure
+  # https://github.com/gregwebs/aeson-applicative/issues/2
+  aeson-applicative = dontHaddock super.aeson-applicative;
+
+  # GHC 7.10.1 is affected by https://github.com/srijs/hwsl2/issues/1.
+  hwsl2 = dontCheck super.hwsl2;
 
 }

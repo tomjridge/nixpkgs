@@ -484,6 +484,10 @@ let self = _self // overrides; _self = with self; {
       sha256 = "1jnihz3029x51a455nxa0jx2z125x38q3vkkggsgdlrvawzxsm00";
     };
     propagatedBuildInputs = [ ModuleBuildWithXSpp ExtUtilsTypemapsDefault ];
+    patches = [
+      # Fix out of memory error on Perl 5.19.4 and later.
+      ../development/perl-modules/boost-geometry-utils-fix-oom.patch
+    ];
   };
 
   BusinessISBN = buildPerlPackage {
@@ -1973,6 +1977,23 @@ let self = _self // overrides; _self = with self; {
     };
   };
 
+  CryptOpenSSLAES = buildPerlPackage rec {
+    name = "Crypt-OpenSSL-AES-0.02";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/T/TT/TTAR/${name}.tar.gz";
+      sha256 = "b66fab514edf97fc32f58da257582704a210c2b35e297d5c31b7fa2ffd08e908";
+    };
+    NIX_CFLAGS_COMPILE = "-I${pkgs.openssl}/include";
+    NIX_CFLAGS_LINK = "-L${pkgs.openssl}/lib -lcrypto";
+    meta = with stdenv.lib; {
+      homepage = https://metacpan.org/release/Crypt-OpenSSL-AES;
+      description = "Perl wrapper around OpenSSL's AES library";
+      license = with licenses; [ artistic1 gpl1Plus ];
+      maintainers = [ maintainers.rycee ];
+      platforms = platforms.unix;
+    };
+  };
+
   CryptOpenSSLBignum = buildPerlPackage rec {
     name = "Crypt-OpenSSL-Bignum-0.04";
     src = fetchurl {
@@ -2545,11 +2566,11 @@ let self = _self // overrides; _self = with self; {
     inherit (pkgs) db;
   };
 
-  DBI = buildPerlPackage {
-    name = "DBI-1.631";
+  DBI = buildPerlPackage rec {
+    name = "DBI-1.633";
     src = fetchurl {
-      url = mirror://cpan/authors/id/T/TI/TIMB/DBI-1.631.tar.gz;
-      sha256 = "04fmrnchhwi7jx4niaiv93vmi343hdm3xj04w9zr2m9hhqh782np";
+      url = "mirror://cpan/authors/id/T/TI/TIMB/${name}.tar.gz";
+      sha256 = "1rsyrzmykl7fxpvxmrjmy3dh9szp639fqdhbccqvywpnr7fbmhg2";
     };
     meta = {
       homepage = http://dbi.perl.org/;
@@ -4005,11 +4026,16 @@ let self = _self // overrides; _self = with self; {
     };
   };
 
-  FontTTF = buildPerlPackage {
-    name = "Font-TTF-0.48";
+  FontTTF = buildPerlPackage rec {
+    name = "Font-TTF-1.05";
     src = fetchurl {
-      url = mirror://cpan/authors/id/M/MH/MHOSKEN/Font-TTF-0.48.tar.gz;
-      sha256 = "0lhz7v8ihaj35y6kr7jb971hgc4iqh1nz3qbfkignb9i8b1dw97r";
+      url = "mirror://cpan/authors/id/M/MH/MHOSKEN/${name}.tar.gz";
+      sha256 = "0l7vxag0v3hf7w1kjyjv02zqrjzhg6xczcv60z00l3z0fr78xi16";
+    };
+    propagatedBuildInputs = [ IOString ];
+    meta = {
+      description = "TTF font support for Perl";
+      license = stdenv.lib.licenses.artistic2;
     };
   };
 
@@ -4102,10 +4128,10 @@ let self = _self // overrides; _self = with self; {
   };
 
   Glib = buildPerlPackage rec {
-    name = "Glib-1.310";
+    name = "Glib-1.312";
     src = fetchurl {
       url = "mirror://cpan/authors/id/X/XA/XAOC/${name}.tar.gz";
-      sha256 = "1iv8q7d0817m3byh2yn7bxxk5qp8bgapaflbglhkw467i31slign";
+      sha256 = "1aqww3ncaxiclfiqvl81hx7k3w4pri3k52rrar0hpzcasics5zr3";
     };
     buildInputs = [ ExtUtilsDepends ExtUtilsPkgConfig pkgs.glib ];
     meta = {
@@ -4810,10 +4836,10 @@ let self = _self // overrides; _self = with self; {
   };
 
   IOTty = buildPerlPackage rec {
-    name = "IO-Tty-1.10";
+    name = "IO-Tty-1.12";
     src = fetchurl {
       url = "mirror://cpan/authors/id/T/TO/TODDR/${name}.tar.gz";
-      sha256 = "1cgqyv1zg8857inlnfczrrgpqr0r6mmqv29b7jlmxv47s4df59ii";
+      sha256 = "0399anjy3bc0w8xzsc3qx5vcyqryc9gc52lc7wh7i49hsdq8gvx2";
     };
   };
 
@@ -5351,11 +5377,11 @@ let self = _self // overrides; _self = with self; {
     };
   };
 
-  LWP = buildPerlPackage {
-    name = "libwww-perl-6.05";
+  LWP = buildPerlPackage rec {
+    name = "libwww-perl-6.13";
     src = fetchurl {
-      url = mirror://cpan/authors/id/G/GA/GAAS/libwww-perl-6.05.tar.gz;
-      sha256 = "08wgwyz7748pv5cyngxia0xl6nragfnhrp4p9s78xhgfyygpj9bv";
+      url = "mirror://cpan/authors/id/E/ET/ETHER/${name}.tar.gz";
+      sha256 = "1cpqjl59viw50bnbdyn8xzrwzg7g54b2rszw0fifacqrppp17gaz";
     };
     propagatedBuildInputs = [ EncodeLocale FileListing HTMLParser HTTPCookies HTTPDaemon HTTPDate HTTPNegotiate HTTPMessage LWPMediaTypes NetHTTP URI WWWRobotRules ];
     doCheck = false; # tries to start a daemon
@@ -5638,6 +5664,9 @@ let self = _self // overrides; _self = with self; {
       sha256 = "1xmf26dfwr8achprc3n1pxgl0mkiyr6pf25wq3dqgzqkghrrsxa2";
     };
     propagatedBuildInputs = [ ];
+
+    installTargets = "install";
+
     meta = with stdenv.lib; {
       homepage    = http://dcssrv1.oit.uci.edu/indiv/ehood/mhonarch.html;
       description = "A mail-to-HTML converter";
@@ -6030,7 +6059,7 @@ let self = _self // overrides; _self = with self; {
       description = "A postmodern object system for Perl 5";
       license = with stdenv.lib.licenses; [ artistic1 gpl1Plus ];
       maintainers = [ maintainers.eelco ];
-      platforms   = stdenv.lib.platforms.linux;
+      platforms   = stdenv.lib.platforms.unix;
     };
   };
 
@@ -8973,10 +9002,10 @@ let self = _self // overrides; _self = with self; {
   };
 
   TermReadLineGnu = buildPerlPackage rec {
-    name = "Term-ReadLine-Gnu-1.24";
+    name = "Term-ReadLine-Gnu-1.26";
     src = fetchurl {
       url = "mirror://cpan/authors/id/H/HA/HAYASHI/${name}.tar.gz";
-      sha256 = "0dp18pgn8vl4dh6rgzcp1kzk4j6wjrrxd6sfcrrywy7jg4b7ikfc";
+      sha256 = "1s2dvjbh501c04s5hpf17mwirslmhqmsymg3ri4hcvh5yvp7bw7q";
     };
     buildInputs = [ pkgs.readline pkgs.ncurses ];
     NIX_CFLAGS_LINK = "-lreadline";
@@ -10634,10 +10663,10 @@ let self = _self // overrides; _self = with self; {
   };
 
   XMLLibXML = buildPerlPackage rec {
-    name = "XML-LibXML-2.0115";
+    name = "XML-LibXML-2.0121";
     src = fetchurl {
       url = "mirror://cpan/authors/id/S/SH/SHLOMIF/${name}.tar.gz";
-      sha256 = "0d6l6idl2920x9xi097fvzfdn9i0s8qa9ksw4bz2w1wh3zsn07zm";
+      sha256 = "1j8d3kmkdlzvyx3khvrcrvp798h50i6zc5i3zm04d81prc8i0hzc";
     };
     SKIP_SAX_INSTALL = 1;
     buildInputs = [ pkgs.libxml2 ];
@@ -10772,10 +10801,10 @@ let self = _self // overrides; _self = with self; {
   };
 
   XMLWriter = buildPerlPackage rec {
-    name = "XML-Writer-0.624";
+    name = "XML-Writer-0.625";
     src = fetchurl {
       url = "mirror://cpan/authors/id/J/JO/JOSEPHW/${name}.tar.gz";
-      sha256 = "0yyz0dh9b4clailbxyi90dfrqpyc6py77rmmz6qmkx7ynlpyxk46";
+      sha256 = "1gjzs570i67ywbv967g8ylb5sg59clwmyrl2yix3jl70dhn55070";
     };
   };
 

@@ -226,6 +226,7 @@
       gitit = 202;
       riemanntools = 203;
       subsonic = 204;
+      riak = 205;
 
       # When adding a uid, make sure it doesn't match an existing gid. And don't use uids above 399!
 
@@ -382,7 +383,7 @@
       seeks = 148;
       prosody = 149;
       i2pd = 150;
-      #dnscrypt-proxy = 151; # unused
+      dnscrypt-proxy = 151;
       systemd-network = 152;
       systemd-resolve = 153;
       systemd-timesync = 154;
@@ -430,6 +431,7 @@
       gitit = 202;
       riemanntools = 203;
       subsonic = 204;
+      riak = 205;
 
       # When adding a gid, make sure it doesn't match an existing
       # uid. Users and groups with the same name should have equal

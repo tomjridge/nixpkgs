@@ -6,8 +6,12 @@ callPackage ./generic.nix (args // rec {
   src = fetchgit {
     url = "https://github.com/ceph/ceph.git";
     rev = "refs/tags/v${version}";
-    sha256 = "1nhqzmxv7bz93b8rbd88wgmw9icm2lhmc94dfscgh23kfpipyd6l";
+    leaveDotGit = true;
+    sha256 = "094f9knxgx8vb9fb1yzld9ib4m0wpqwqgqjl3xqf0dzm48nxqd73";
   };
 
-  patches = [ ./fix-pgrefdebugging.patch ];
+  patches = [
+    ./fix-pgrefdebugging.patch
+    ./boost-158.patch
+  ];
 })

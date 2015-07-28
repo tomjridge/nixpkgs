@@ -334,6 +334,7 @@ let
     sprint = [ pkgs.openmpi ];
     ssanv = [ pkgs.proj ];
     stsm = [ pkgs.gsl ];
+    stringi = [ pkgs.icu ];
     survSNP = [ pkgs.gsl ];
     sysfonts = [ pkgs.zlib pkgs.libpng pkgs.freetype ];
     TAQMNGR = [ pkgs.zlib ];
@@ -417,7 +418,6 @@ let
     "BEQI2"
     "betapart"
     "betaper"
-    "BHMSMAfMRI"
     "BiodiversityR"
     "BioGeoBEARS"
     "bio_infer"
@@ -607,7 +607,6 @@ let
     "rgl"
     "RHRV"
     "rich"
-    "ringscale"
     "rioja"
     "ripa"
     "rite"
@@ -1155,7 +1154,6 @@ let
     "immunoClust" # build is broken
     "imputeR" # depends on broken package nlopt-2.4.2
     "in2extRemes" # depends on broken package nlopt-2.4.2
-    "incReg" # depends on broken package nlopt-2.4.2
     "inferference" # depends on broken package nlopt-2.4.2
     "influence_ME" # depends on broken package nlopt-2.4.2
     "inSilicoMerging" # build is broken
@@ -1504,6 +1502,20 @@ let
   ];
 
   otherOverrides = old: new: {
+    stringi = old.stringi.overrideDerivation (attrs: {
+      postInstall = let
+        icuName = "icudt52l";
+        icuSrc = pkgs.fetchzip {
+          url = "http://static.rexamine.com/packages/${icuName}.zip";
+          sha256 = "0hvazpizziq5ibc9017i1bb45yryfl26wzfsv05vk9mc1575r6xj";
+          stripRoot = false;
+        };
+        in ''
+          ${attrs.postInstall or ""}
+          cp ${icuSrc}/${icuName}.dat $out/library/stringi/libs
+        '';
+    });
+
     xml2 = old.xml2.overrideDerivation (attrs: {
       preConfigure = "export LIBXML_INCDIR=${pkgs.libxml2}/include/libxml2";
     });

@@ -1,5 +1,5 @@
-{ stdenv, autoconf, automake, makeWrapper, pkgconfig, libtool, which
-, boost, python, pythonPackages, libxml2, git, zlib
+{ stdenv, autoconf, automake, makeWrapper, pkgconfig, libtool, which, git
+, boost, python, pythonPackages, libxml2, zlib
 
 # Optional Dependencies
 , snappy ? null, leveldb ? null, yasm ? null, fcgi ? null, expat ? null
@@ -101,7 +101,7 @@ let
   wrapArgs = "--set PYTHONPATH \"$(toPythonPath $lib)\""
     + " --prefix PYTHONPATH : \"$(toPythonPath ${python.modules.readline})\""
     + " --prefix PYTHONPATH : \"$(toPythonPath ${pythonPackages.flask})\""
-    + " --set PATH : \"$out/bin\"";
+    + " --set PATH \"$out/bin\"";
 in
 stdenv.mkDerivation {
   name="ceph-${version}";
@@ -112,12 +112,13 @@ stdenv.mkDerivation {
     ./0001-Makefile-env-Don-t-force-sbin.patch
   ];
 
-  nativeBuildInputs = [ autoconf automake makeWrapper pkgconfig libtool which ]
-    ++ optionals (versionAtLeast version "10.0.0") [ pythonPackages.setuptools ];
+  nativeBuildInputs = [ autoconf automake makeWrapper pkgconfig libtool which git ]
+    ++ optionals (versionAtLeast version "9.0.2") [
+      pythonPackages.setuptools pythonPackages.argparse
+    ];
   buildInputs = buildInputs ++ cryptoLibsMap.${cryptoStr} ++ [
     boost python libxml2 optYasm optLibatomic_ops optLibs3 malloc pythonPackages.flask zlib
   ] ++ optional (versionAtLeast version "9.0.0") [
-    git                   # Used for the gitversion string
     pythonPackages.sphinx # Used for docs
   ] ++ optional stdenv.isLinux [
     linuxHeaders libuuid udev keyutils optLibaio optLibxfs optZfs
@@ -147,7 +148,7 @@ stdenv.mkDerivation {
   preConfigure = ''
     # Ceph expects the arch command to be usable during configure
     # for detecting the assembly type
-    mkdir mybin
+    mkdir -p mybin
     echo "#${stdenv.shell} -e" >> mybin/arch
     echo "uname -m" >> mybin/arch
     chmod +x mybin/arch
@@ -157,6 +158,10 @@ stdenv.mkDerivation {
 
     # Fix the python site-packages install directory
     sed -i "s,\(PYTHON\(\|_EXEC\)_PREFIX=\).*,\1'$lib',g" configure
+
+    # Fix the PYTHONPATH for installing ceph-detect-init to $out
+    mkdir -p "$(toPythonPath $out)"
+    export PYTHONPATH="$(toPythonPath $out):$PYTHONPATH"
   '';
 
   configureFlags = [
@@ -200,7 +205,7 @@ stdenv.mkDerivation {
   ] ++ optional (versionAtLeast version "9.0.1") [
     (mkWith   false                        "tcmalloc-minimal"    null)
     (mkWith   false                        "valgrind"            null)
-  ] ++ optional (versionAtLeast version "10.0.0") [
+  ] ++ optional (versionAtLeast version "9.0.2") [
     (mkWith   true                         "man-pages"           null)
     (mkWith   true                         "systemd-libexec-dir" "\${TMPDIR}")
   ];
