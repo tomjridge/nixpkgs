@@ -4,15 +4,15 @@
 , makeWrapper, xkbcomp, xorgserver, getopt, xauth, utillinux, which, fontsConf, xkeyboard_config
 , ffmpeg, x264, libvpx, pil, libwebp
 , libfakeXinerama
-, lz4, python_lz4 }:
+, lz4 }:
 
 buildPythonPackage rec {
-  name = "xpra-0.15.3";
+  name = "xpra-0.15.4";
   namePrefix = "";
 
   src = fetchurl {
     url = "https://www.xpra.org/src/${name}.tar.xz";
-    sha256 = "1671r4ah2h0i3qbp27csck506n5y1zr9fv0869cv09knspa358i4";
+    sha256 = "29be80b8987dd131058aab0a1c8d456a7ac67ad56c54d2b5e72472ff003799a2";
   };
 
   buildInputs = [
@@ -25,13 +25,13 @@ buildPythonPackage rec {
 
     pango cairo gdk_pixbuf atk gtk glib
 
-    ffmpeg libvpx x264 libwebp lz4 python_lz4
+    ffmpeg libvpx x264 libwebp lz4 pythonPackages.python_lz4
 
     makeWrapper
   ];
 
   propagatedBuildInputs = [
-    pil pygtk pygobject pythonPackages.rencode lz4 python_lz4
+    pil pygtk pygobject pythonPackages.rencode lz4 pythonPackages.python_lz4
   ];
 
   postPatch = ''
@@ -54,7 +54,8 @@ buildPythonPackage rec {
       --set XKB_BINDIR "${xkbcomp}/bin" \
       --set FONTCONFIG_FILE "${fontsConf}" \
       --prefix LD_LIBRARY_PATH : ${libfakeXinerama}/lib \
-      --prefix PATH : ${getopt}/bin:${xorgserver}/bin:${xauth}/bin:${which}/bin:${utillinux}/bin
+      --prefix PATH : ${getopt}/bin:${xorgserver}/bin:${xauth}/bin:${which}/bin:${utillinux}/bin \
+      --prefix PYTHONPATH : "$PYTHONPATH"
   '';
 
   #TODO: replace postInstall with postFixup to avoid double wrapping of xpra; needs more work though

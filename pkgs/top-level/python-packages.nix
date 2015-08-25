@@ -17319,4 +17319,25 @@ let
     };
   };
 
+
+  python_lz4 = buildPythonPackage rec {
+    version = "0.7.0";
+    name = "python-lz4-${version}";
+
+  src = pkgs.fetchgit {
+    url = "https://github.com/steeve/python-lz4";
+    rev = "8ac9cf9df8fb8d51f40a3065fa538f8df1c8a62a";
+    sha256 = "57b7aa4b9fd5d186d8e70b7007fae0c920b0e59cd3569784ddea892f1034f4fa";
+  };
+
+    propagatedBuildInputs = with self; [ nose ];
+
+  meta = {
+    description = "Python lz4 bindings";
+    homepage = https://github.com/steeve/python-lz4;
+  };
+
+  };
+
+
 }; in pythonPackages

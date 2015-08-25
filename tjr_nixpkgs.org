@@ -369,9 +369,28 @@ nix-build -A python_lz4 gives
     - not clear why this code is not picking up lz4!
       
       
+  - ok, how to find out which compressors xpra knows about?
+    - need to remove ~/.xpra!
+  - need to run xpra with debugging https://www.xpra.org/trac/wiki/Logging
+
+
+  - moved to package python_lz4 in python-packages
+  - we want to somehow propagate ourself when building python_lz4/
 
 
 
+  - these two lines in compression.py are wrong:
+
+    LZ4_uncompress = None
+    has_lz4 = False
+
+  - make our own github repo, and fix!
 
 
+  - turns out the lz4 detection in xpra was buggy; hoping 0.15.4 fixes
+    - now it seems to detect! success!
+
+
+  - xpra start ssh:pc1177:100 --compressors=lz4 --start-child=eclipse
+    
 
