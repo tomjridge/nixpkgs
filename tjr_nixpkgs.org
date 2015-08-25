@@ -337,3 +337,41 @@ nix-build -A python_lz4 gives
 > Please make the appropriate changes for your system and try again.
 > builder for ‘/nix/store/8vrhakr8ri5avwpl1fj4f4b32i9rzmkn-python-lz4.drv’ failed with exit code 1
 > error: build of ‘/nix/store/8vrhakr8ri5avwpl1fj4f4b32i9rzmkn-python-lz4.drv’ failed
+
+
+
+---
+
+
+  - xpra built, but doesn't seem to detect lz4: install and enable lzo or lz4 support for better performance
+  - test lz4 in nix-shell -A xpra
+    - python -c "import lz4" ; echo $? # OK, installed
+  - so we need to somehow enable this when building xpra
+
+
+  - xpra start :100 --compressors=lz4 seems to work from a nix-shell
+
+
+  - X server already running on display :100
+    - how to kill
+    - ps aux |grep X
+      - shows Ovfb
+
+
+  - ok, xpra start/xpra attach works
+    - everything seems to work ok, but lz4 is not picked up
+    - tests/xpra/net/test_lz4.py works ok, but perhaps picking up local lz4?
+    - and in a nix-shell --pure this is picked up
+
+  - code in xpra/net/compression seems to be a bit flaky
+    - looking for a file named lz4-0.7.0-py2.7-linux-x86_64.egg/lz4.so
+    - but we only have the .egg file - perhaps it needs uncompressing? no
+    - not clear why this code is not picking up lz4!
+      
+      
+
+
+
+
+
+

@@ -3,7 +3,8 @@
 , xorg, gtk, glib, pango, cairo, gdk_pixbuf, pygtk, atk, pygobject, pycairo
 , makeWrapper, xkbcomp, xorgserver, getopt, xauth, utillinux, which, fontsConf, xkeyboard_config
 , ffmpeg, x264, libvpx, pil, libwebp
-, libfakeXinerama }:
+, libfakeXinerama
+, lz4, python_lz4 }:
 
 buildPythonPackage rec {
   name = "xpra-0.15.3";
@@ -24,13 +25,13 @@ buildPythonPackage rec {
 
     pango cairo gdk_pixbuf atk gtk glib
 
-    ffmpeg libvpx x264 libwebp
+    ffmpeg libvpx x264 libwebp lz4 python_lz4
 
     makeWrapper
   ];
 
   propagatedBuildInputs = [
-    pil pygtk pygobject pythonPackages.rencode
+    pil pygtk pygobject pythonPackages.rencode lz4 python_lz4
   ];
 
   postPatch = ''

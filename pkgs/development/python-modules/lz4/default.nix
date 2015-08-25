@@ -1,4 +1,4 @@
-{stdenv, fetchgit, python, setuptools, makeWrapper}:
+{stdenv, fetchgit, python, setuptools, makeWrapper, lz4}:
 
 stdenv.mkDerivation rec {
   name = "python-lz4";
@@ -9,6 +9,7 @@ stdenv.mkDerivation rec {
   };
 
   buildInputs = [python setuptools makeWrapper];
+  propagatedBuildInputs = [ lz4 ];
   buildPhase = "python ./setup.py build";
   installPhase = ''
   # from mpi4py.default.nix
