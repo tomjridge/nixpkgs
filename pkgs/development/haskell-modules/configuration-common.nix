@@ -11,6 +11,12 @@ self: super: {
   cabal-install = (dontCheck super.cabal-install).overrideScope (self: super: { Cabal = self.Cabal_1_22_4_0; zlib = self.zlib_0_5_4_2; });
   cabal-install_1_18_1_0 = (dontCheck super.cabal-install_1_18_1_0).overrideScope (self: super: { Cabal = self.Cabal_1_18_1_6; zlib = self.zlib_0_5_4_2; });
 
+  # Link statically to avoid runtime dependency on GHC.
+  jailbreak-cabal = disableSharedExecutables super.jailbreak-cabal;
+
+  # Apply NixOS-specific patches.
+  ghc-paths = appendPatch super.ghc-paths ./patches/ghc-paths-nix.patch;
+
   # Break infinite recursions.
   Dust-crypto = dontCheck super.Dust-crypto;
   hasql-postgres = dontCheck super.hasql-postgres;
@@ -30,11 +36,6 @@ self: super: {
 
   # Use the default version of mysql to build this package (which is actually mariadb).
   mysql = super.mysql.override { mysql = pkgs.mysql.lib; };
-
-  # Please also remove optparse-applicative special case from
-  # cabal2nix/hackage2nix.hs when removing the following.
-  elm-make = super.elm-make.override { optparse-applicative = self.optparse-applicative_0_10_0; };
-  elm-package = super.elm-package.override { optparse-applicative = self.optparse-applicative_0_10_0; };
 
   # Link the proper version.
   zeromq4-haskell = super.zeromq4-haskell.override { zeromq = pkgs.zeromq4; };
@@ -165,7 +166,7 @@ self: super: {
   # Jailbreak doesn't get the job done because the Cabal file uses conditionals a lot.
   darcs = (overrideCabal super.darcs (drv: {
     doCheck = false;            # The test suite won't even start.
-    patchPhase = "sed -i -e 's|attoparsec .*,|attoparsec,|' darcs.cabal";
+    postPatch = "sed -i -e 's|attoparsec .*,|attoparsec,|' -e 's|vector .*,|vector,|' darcs.cabal";
   })).overrideScope (self: super: { zlib = self.zlib_0_5_4_2; });
 
   # https://github.com/massysett/rainbox/issues/1
@@ -185,7 +186,7 @@ self: super: {
   vector = if pkgs.stdenv.isi686 then appendConfigureFlag super.vector "--ghc-options=-msse2" else super.vector;
 
   # cabal2nix likes to generate dependencies on hinotify when hfsevents is really required
-  # on darwin: https://github.com/NixOS/cabal2nix/issues/146
+  # on darwin: https://github.com/NixOS/cabal2nix/issues/146.
   hinotify = if pkgs.stdenv.isDarwin then self.hfsevents else super.hinotify;
 
   # hfsevents needs CoreServices in scope
@@ -205,7 +206,7 @@ self: super: {
   x509-system = if pkgs.stdenv.isDarwin && !pkgs.stdenv.cc.nativeLibc
     then let inherit (pkgs.darwin) security_tool;
       in pkgs.lib.overrideDerivation (addBuildDepend super.x509-system security_tool) (drv: {
-        patchPhase = (drv.patchPhase or "") + ''
+        postPatch = (drv.postPatch or "") + ''
           substituteInPlace System/X509/MacOS.hs --replace security ${security_tool}/bin/security
         '';
       })
@@ -215,7 +216,7 @@ self: super: {
     then super.double-conversion
     else overrideCabal super.double-conversion (drv:
       {
-        patchPhase = ''
+        postPatch = ''
           substituteInPlace double-conversion.cabal --replace stdc++ c++
         '';
       });
@@ -247,9 +248,6 @@ self: super: {
   # https://github.com/tibbe/ekg/commit/95018646f48f60d9ccf6209cc86747e0f132e737, not yet in hackage
   ekg = doJailbreak super.ekg;
 
-  # https://github.com/diagrams/diagrams-rasterific/commit/2758e5760c64f8ca2528628bd11de502f354ab15, not yet in hackage
-  diagrams-rasterific = doJailbreak super.diagrams-rasterific;
-
   # https://github.com/NixOS/cabal2nix/issues/136
   glib = addBuildDepends super.glib [pkgs.pkgconfig pkgs.glib];
   gtk3 = super.gtk3.override { inherit (pkgs) gtk3; };
@@ -257,13 +255,13 @@ self: super: {
   gtksourceview3 = super.gtksourceview3.override { inherit (pkgs.gnome3) gtksourceview; };
 
   # Need WebkitGTK, not just webkit.
-  webkit = super.webkit.override { webkit = pkgs.webkitgtk24x; };
+  webkit = super.webkit.override { webkit = pkgs.webkitgtk2; };
   webkitgtk3 = super.webkitgtk3.override { webkit = pkgs.webkitgtk24x; };
   webkitgtk3-javascriptcore = super.webkitgtk3-javascriptcore.override { webkit = pkgs.webkitgtk24x; };
   websnap = super.websnap.override { webkit = pkgs.webkitgtk24x; };
 
-  # https://github.com/jgm/zip-archive/issues/21
-  zip-archive = addBuildTool super.zip-archive pkgs.zip;
+  # While waiting for https://github.com/jwiegley/gitlib/pull/53 to be merged
+  hlibgit2 = addBuildTool super.hlibgit2 pkgs.git;
 
   # https://github.com/mvoidex/hsdev/issues/11
   hsdev = dontHaddock super.hsdev;
@@ -297,6 +295,7 @@ self: super: {
   dbmigrations = dontCheck super.dbmigrations;
   euler = dontCheck super.euler;                        # https://github.com/decomputed/euler/issues/1
   filestore = dontCheck super.filestore;
+  getopt-generics = dontCheck super.getopt-generics;
   graceful = dontCheck super.graceful;
   hakyll = dontCheck super.hakyll;
   Hclip = dontCheck super.Hclip;
@@ -314,6 +313,8 @@ self: super: {
   wai-middleware-throttle = dontCheck super.wai-middleware-throttle; # https://github.com/creichert/wai-middleware-throttle/issues/1
   xkbcommon = dontCheck super.xkbcommon;
   xmlgen = dontCheck super.xmlgen;
+  ide-backend = dontCheck super.ide-backend;
+  msgpack-rpc = dontCheck super.msgpack-rpc;
 
   # These packages try to access the network.
   amqp = dontCheck super.amqp;
@@ -328,6 +329,7 @@ self: super: {
   hasql = dontCheck super.hasql;                        # http://hydra.cryp.to/build/502489/nixlog/4/raw
   hjsonschema = overrideCabal super.hjsonschema (drv: { testTarget = "local"; });
   holy-project = dontCheck super.holy-project;          # http://hydra.cryp.to/build/502002/nixlog/1/raw
+  hoogle = overrideCabal super.hoogle (drv: { testTarget = "--test-option=--no-net"; });
   http-client = dontCheck super.http-client;            # http://hydra.cryp.to/build/501430/nixlog/1/raw
   http-conduit = dontCheck super.http-conduit;          # http://hydra.cryp.to/build/501966/nixlog/1/raw
   js-jquery = dontCheck super.js-jquery;
@@ -392,7 +394,6 @@ self: super: {
   dotfs = dontCheck super.dotfs;                        # http://hydra.cryp.to/build/498599/log/raw
   DRBG = dontCheck super.DRBG;                          # http://hydra.cryp.to/build/498245/nixlog/1/raw
   either-unwrap = dontCheck super.either-unwrap;        # http://hydra.cryp.to/build/498782/log/raw
-  elm-repl = dontCheck super.elm-repl;                  # http://hydra.cryp.to/build/501878/nixlog/1/raw
   etcd = dontCheck super.etcd;
   fb = dontCheck super.fb;                              # needs credentials for Facebook
   fptest = dontCheck super.fptest;                      # http://hydra.cryp.to/build/499124/log/raw
@@ -400,7 +401,6 @@ self: super: {
   ghc-events-parallel = dontCheck super.ghc-events-parallel;    # http://hydra.cryp.to/build/496828/log/raw
   ghcid = dontCheck super.ghcid;
   ghc-imported-from = dontCheck super.ghc-imported-from;
-  ghc-mod = dontCheck super.ghc-mod;                    # http://hydra.cryp.to/build/499674/log/raw
   ghc-parmake = dontCheck super.ghc-parmake;
   gitlib-cmdline = dontCheck super.gitlib-cmdline;
   git-vogue = dontCheck super.git-vogue;
@@ -523,6 +523,7 @@ self: super: {
   stable-tree = dontDistribute super.stable-tree;
   synthesizer-llvm = dontDistribute super.synthesizer-llvm;
   optimal-blocks = dontDistribute super.optimal-blocks;
+  hs-blake2 = dontDistribute super.hs-blake2;
 
   # https://ghc.haskell.org/trac/ghc/ticket/9625
   vty = dontCheck super.vty;
@@ -558,7 +559,7 @@ self: super: {
   duplo = dontCheck super.duplo;
 
   # Nix-specific workaround
-  xmonad = appendPatch super.xmonad ./xmonad-nix.patch;
+  xmonad = appendPatch super.xmonad ./patches/xmonad-nix.patch;
 
   # https://github.com/evanrinehart/mikmod/issues/1
   mikmod = addExtraLibrary super.mikmod pkgs.libmikmod;
@@ -579,31 +580,6 @@ self: super: {
   # no haddock since this is an umbrella package.
   cloud-haskell = dontHaddock super.cloud-haskell;
 
-  # Disable tests which couldn't be built.
-  distributed-process-async = dontCheck super.distributed-process-async;
-
-  # Disable tests which couldn't be built.
-  distributed-process-client-server = dontCheck super.distributed-process-client-server;
-
-  # Disable tests which couldn't be built.
-  distributed-process-extras = dontCheck super.distributed-process-extras;
-
-  # Make distributed-process-platform compile until next version
-  distributed-process-platform = overrideCabal super.distributed-process-platform (drv: {
-    patchPhase = "mv Setup.hs Setup.lhs";
-    doCheck = false;
-    doHaddock = false;
-  });
-
-  # Disable tests due to a failure (Sequential Shutdown Ordering test.)
-  distributed-process-supervisor = dontCheck super.distributed-process-supervisor;
-
-  # Disable network test and errorneous haddock.
-  distributed-process-tests = overrideCabal super.distributed-process-tests (drv: {
-    doCheck = false;
-    doHaddock = false;
-  });
-
   # This packages compiles 4+ hours on a fast machine. That's just unreasonable.
   CHXHtml = dontDistribute super.CHXHtml;
 
@@ -612,9 +588,6 @@ self: super: {
 
   # https://github.com/NixOS/nixpkgs/issues/6350
   paypal-adaptive-hoops = overrideCabal super.paypal-adaptive-hoops (drv: { testTarget = "local"; });
-
-  # https://github.com/seanparsons/wiring/issues/1
-  wiring = markBrokenVersion super.wiring;
 
   # https://github.com/jwiegley/simple-conduit/issues/2
   simple-conduit = markBroken super.simple-conduit;
@@ -628,12 +601,8 @@ self: super: {
   # https://github.com/vincenthz/hs-asn1/issues/12
   asn1-encoding = dontCheck super.asn1-encoding;
 
-  # wxc needs help deciding which version of GTK to use.
-  wxc = overrideCabal (super.wxc.override { wxGTK = pkgs.wxGTK29; }) (drv: {
-    patches = [ ./wxc-no-ldconfig.patch ];
-    doHaddock = false;
-    postInstall = "cp -v dist/build/libwxc.so.${drv.version} $out/lib/libwxc.so";
-  });
+  # wxc supports wxGTX >= 2.9, but our current default version points to 2.8.
+  wxc = super.wxc.override { wxGTK = pkgs.wxGTK29; };
   wxcore = super.wxcore.override { wxGTK = pkgs.wxGTK29; };
 
   # Depends on QuickCheck 1.x.
@@ -711,6 +680,10 @@ self: super: {
     '';
   });
 
+  # Tests attempt to use NPM to install from the network into
+  # /homeless-shelter. Disabled.
+  purescript = dontCheck super.purescript;
+
   # Broken by GLUT update.
   Monadius = markBroken super.Monadius;
 
@@ -752,7 +725,7 @@ self: super: {
 
   # Already fixed in upstream darcs repo.
   xmonad-contrib = overrideCabal super.xmonad-contrib (drv: {
-    patchPhase = ''
+    postPatch = ''
       sed -i -e '24iimport Control.Applicative' XMonad/Util/Invisible.hs
       sed -i -e '22iimport Control.Applicative' XMonad/Hooks/DebugEvents.hs
     '';
@@ -763,7 +736,7 @@ self: super: {
 
   # Hardcoded include path
   poppler = overrideCabal super.poppler (drv: {
-    patchPhase = ''
+    postPatch = ''
       sed -i -e 's,glib/poppler.h,poppler.h,' poppler.cabal
       sed -i -e 's,glib/poppler.h,poppler.h,' Graphics/UI/Gtk/Poppler/Structs.hsc
     '';
@@ -780,13 +753,13 @@ self: super: {
   leksah = dontCheck super.leksah;
 
   # Patch to consider NIX_GHC just like xmonad does
-  dyre = appendPatch super.dyre ./dyre-nix.patch;
+  dyre = appendPatch super.dyre ./patches/dyre-nix.patch;
 
   # Test suite won't compile against tasty-hunit 0.9.x.
   zlib = dontCheck super.zlib;
 
   # Override the obsolete version from Hackage with our more up-to-date copy.
-  cabal2nix = pkgs.cabal2nix;
+  cabal2nix = self.callPackage ../tools/haskell/cabal2nix {};
 
   # https://github.com/urs-of-the-backwoods/HGamer3D/issues/7
   HGamer3D-Bullet-Binding = dontDistribute super.HGamer3D-Bullet-Binding;
@@ -800,17 +773,22 @@ self: super: {
   # https://github.com/nushio3/doctest-prop/issues/1
   doctest-prop = dontCheck super.doctest-prop;
 
-  # https://github.com/goldfirere/singletons/issues/116
   # https://github.com/goldfirere/singletons/issues/117
-  # https://github.com/goldfirere/singletons/issues/118
   clash-lib = dontDistribute super.clash-lib;
   clash-verilog = dontDistribute super.clash-verilog;
   Frames = dontDistribute super.Frames;
   hgeometry = dontDistribute super.hgeometry;
   hipe = dontDistribute super.hipe;
+  hsqml-datamodel-vinyl = dontDistribute super.hsqml-datamodel-vinyl;
   singleton-nats = dontDistribute super.singleton-nats;
   singletons = markBroken super.singletons;
   units-attoparsec = dontDistribute super.units-attoparsec;
+  ihaskell-widgets = dontDistribute super.ihaskell-widgets;
+  exinst-bytes = dontDistribute super.exinst-bytes;
+  exinst-deepseq = dontDistribute super.exinst-deepseq;
+  exinst-aeson = dontDistribute super.exinst-aeson;
+  exinst = dontDistribute super.exinst;
+  exinst-hashable = dontDistribute super.exinst-hashable;
 
   # https://github.com/anton-k/temporal-music-notation/issues/1
   temporal-music-notation = markBroken super.temporal-music-notation;
@@ -837,9 +815,6 @@ self: super: {
   # https://github.com/kkardzis/curlhs/issues/6
   curlhs = dontCheck super.curlhs;
 
-  # This needs the latest version of errors to compile.
-  pipes-errors = super.pipes-errors.override { errors = self.errors_2_0_0; };
-
   # https://github.com/hvr/token-bucket/issues/3
   token-bucket = dontCheck super.token-bucket;
 
@@ -851,9 +826,6 @@ self: super: {
 
   # FPCO's fork of Cabal won't succeed its test suite.
   Cabal-ide-backend = dontCheck super.Cabal-ide-backend;
-
-  # https://github.com/DanielG/cabal-helper/issues/2
-  cabal-helper = overrideCabal super.cabal-helper (drv: { preCheck = "export HOME=$TMPDIR"; });
 
   # https://github.com/ekmett/comonad/issues/25
   comonad = dontCheck super.comonad;
@@ -895,5 +867,118 @@ self: super: {
 
   # https://ghc.haskell.org/trac/ghc/ticket/9825
   vimus = overrideCabal super.vimus (drv: { broken = pkgs.stdenv.isLinux && pkgs.stdenv.isi686; });
+
+  # https://github.com/hspec/mockery/issues/6
+  mockery = overrideCabal super.mockery (drv: { preCheck = "export TRAVIS=true"; });
+
+  # https://github.com/alphaHeavy/lzma-conduit/issues/5
+  lzma-conduit = dontCheck super.lzma-conduit;
+
+  # https://github.com/kazu-yamamoto/logger/issues/42
+  logger = dontCheck super.logger;
+
+  # https://github.com/edwinb/EpiVM/issues/13
+  # https://github.com/edwinb/EpiVM/issues/14
+  epic = addExtraLibraries (addBuildTool super.epic self.happy) [pkgs.boehmgc pkgs.gmp];
+
+  # Upstream has no issue tracker.
+  dpkg = markBroken super.dpkg;
+
+  # https://github.com/ekmett/wl-pprint-terminfo/issues/7
+  wl-pprint-terminfo = addExtraLibrary super.wl-pprint-terminfo pkgs.ncurses;
+
+  # https://github.com/bos/pcap/issues/5
+  pcap = addExtraLibrary super.pcap pkgs.libpcap;
+
+  # https://github.com/skogsbaer/hscurses/issues/24
+  hscurses = markBroken super.hscurses;
+
+  # https://github.com/qnikst/imagemagick/issues/34
+  imagemagick = dontCheck super.imagemagick;
+
+  # https://github.com/liyang/thyme/issues/36
+  thyme = dontCheck super.thyme;
+
+  # https://github.com/k0ral/hbro-contrib/issues/1
+  hbro-contrib = dontDistribute super.hbro-contrib;
+
+  # https://github.com/aka-bash0r/multi-cabal/issues/4
+  multi-cabal = markBroken super.multi-cabal;
+
+  # Elm is no longer actively maintained on Hackage: https://github.com/NixOS/nixpkgs/pull/9233.
+  Elm = markBroken super.Elm;
+  elm-build-lib = markBroken super.elm-build-lib;
+  elm-compiler = markBroken super.elm-compiler;
+  elm-get = markBroken super.elm-get;
+  elm-make = markBroken super.elm-make;
+  elm-package = markBroken super.elm-package;
+  elm-reactor = markBroken super.elm-reactor;
+  elm-repl = markBroken super.elm-repl;
+  elm-server = markBroken super.elm-server;
+  elm-yesod = markBroken super.elm-yesod;
+
+  # https://github.com/GaloisInc/HaNS/pull/8
+  hans = appendPatch super.hans ./patches/hans-disable-webserver.patch;
+
+  # https://github.com/athanclark/sets/issues/2
+  sets = dontCheck super.sets;
+
+  # https://github.com/lens/lens-aeson/issues/18
+  lens-aeson = dontCheck super.lens-aeson;
+
+  # Byte-compile elisp code for Emacs.
+  ghc-mod = overrideCabal super.ghc-mod (drv: {
+    preCheck = "export HOME=$TMPDIR";
+    testToolDepends = drv.testToolDepends or [] ++ [self.cabal-install];
+    doCheck = false;            # https://github.com/kazu-yamamoto/ghc-mod/issues/335
+    executableToolDepends = drv.executableToolDepends or [] ++ [pkgs.emacs];
+    postInstall = ''
+      local lispdir=( "$out/share/"*"-${self.ghc.name}/${drv.pname}-${drv.version}/elisp" )
+      make -C $lispdir
+      mkdir -p $out/share/emacs/site-lisp
+      ln -s "$lispdir/"*.el{,c} $out/share/emacs/site-lisp/
+    '';
+  });
+
+  # Byte-compile elisp code for Emacs.
+  structured-haskell-mode = overrideCabal super.structured-haskell-mode (drv: {
+    executableToolDepends = drv.executableToolDepends or [] ++ [pkgs.emacs];
+    postInstall = ''
+      local lispdir=( "$out/share/"*"-${self.ghc.name}/${drv.pname}-${drv.version}/elisp" )
+      pushd >/dev/null $lispdir
+      for i in *.el; do
+        emacs -Q -L . -L ${pkgs.emacs24Packages.haskellMode}/share/emacs/site-lisp \
+          --batch --eval "(byte-compile-disable-warning 'cl-functions)" \
+          -f batch-byte-compile $i
+      done
+      popd >/dev/null
+      mkdir -p $out/share/emacs
+      ln -s $lispdir $out/share/emacs/site-lisp
+    '';
+  });
+
+  # Byte-compile elisp code for Emacs.
+  hindent = overrideCabal super.hindent (drv: {
+    executableToolDepends = drv.executableToolDepends or [] ++ [pkgs.emacs];
+    postInstall = ''
+      local lispdir=( "$out/share/"*"-${self.ghc.name}/${drv.pname}-${drv.version}/elisp" )
+      pushd >/dev/null $lispdir
+      for i in *.el; do
+        emacs -Q -L . -L ${pkgs.emacs24Packages.haskellMode}/share/emacs/site-lisp \
+          --batch --eval "(byte-compile-disable-warning 'cl-functions)" \
+          -f batch-byte-compile $i
+      done
+      popd >/dev/null
+      mkdir -p $out/share/emacs
+      ln -s $lispdir $out/share/emacs/site-lisp
+    '';
+  });
+
+  # https://github.com/yesodweb/Shelly.hs/issues/106
+  # https://github.com/yesodweb/Shelly.hs/issues/108
+  shelly = dontCheck super.shelly;
+
+  # https://github.com/bos/configurator/issues/22
+  configurator = dontCheck super.configurator;
 
 }

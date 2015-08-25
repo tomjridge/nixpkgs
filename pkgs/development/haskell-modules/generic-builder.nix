@@ -27,7 +27,7 @@
 , jailbreak ? false
 , license
 , maintainers ? []
-, doHaddock ? true
+, doHaddock ? !stdenv.isDarwin || stdenv.lib.versionAtLeast ghc.version "7.8"
 , passthru ? {}
 , pkgconfigDepends ? [], libraryPkgconfigDepends ? [], executablePkgconfigDepends ? [], testPkgconfigDepends ? []
 , platforms ? ghc.meta.platforms
@@ -38,14 +38,13 @@
 , patches ? [], patchPhase ? "", prePatch ? "", postPatch ? ""
 , preConfigure ? "", postConfigure ? ""
 , preBuild ? "", postBuild ? ""
-, preInstall ? "", postInstall ? ""
+, installPhase ? "", preInstall ? "", postInstall ? ""
 , checkPhase ? "", preCheck ? "", postCheck ? ""
 , preFixup ? "", postFixup ? ""
 , coreSetup ? false # Use only core packages to build Setup.hs.
 , useCpphs ? false
 } @ args:
 
-assert pkgconfigDepends != [] -> pkgconfig != null;
 assert editedCabalFile != null -> revision != null;
 
 let
@@ -105,11 +104,14 @@ let
   isHaskellPkg = x: (x ? pname) && (x ? version) && (x ? env);
   isSystemPkg = x: !isHaskellPkg x;
 
+  allPkgconfigDepends = pkgconfigDepends ++ libraryPkgconfigDepends ++ executablePkgconfigDepends ++
+                        optionals doCheck testPkgconfigDepends;
+
   propagatedBuildInputs = buildDepends ++ libraryHaskellDepends ++ executableHaskellDepends;
   otherBuildInputs = extraLibraries ++ librarySystemDepends ++ executableSystemDepends ++
                      buildTools ++ libraryToolDepends ++ executableToolDepends ++
-                     optionals (pkgconfigDepends != []) ([pkgconfig] ++ pkgconfigDepends ++ libraryPkgconfigDepends ++ executablePkgconfigDepends) ++
-                     optionals doCheck (testDepends ++ testHaskellDepends ++ testSystemDepends);
+                     optionals (allPkgconfigDepends != []) ([pkgconfig] ++ allPkgconfigDepends) ++
+                     optionals doCheck (testDepends ++ testHaskellDepends ++ testSystemDepends ++ testToolDepends);
   allBuildInputs = propagatedBuildInputs ++ otherBuildInputs;
 
   haskellBuildInputs = stdenv.lib.filter isHaskellPkg allBuildInputs;
@@ -122,6 +124,9 @@ let
   ghcCommandCaps = toUpper ghcCommand;
 
 in
+
+assert allPkgconfigDepends != [] -> pkgconfig != null;
+
 stdenv.mkDerivation ({
   name = "${optionalString (hasActiveLibrary && pname != "ghcjs") "haskell-"}${pname}-${version}";
 
@@ -300,6 +305,7 @@ stdenv.mkDerivation ({
 // optionalAttrs (preCheck != "")       { inherit preCheck; }
 // optionalAttrs (postCheck != "")      { inherit postCheck; }
 // optionalAttrs (preInstall != "")     { inherit preInstall; }
+// optionalAttrs (installPhase != "")   { inherit installPhase; }
 // optionalAttrs (postInstall != "")    { inherit postInstall; }
 // optionalAttrs (preFixup != "")       { inherit preFixup; }
 // optionalAttrs (postFixup != "")      { inherit postFixup; }

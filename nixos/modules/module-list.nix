@@ -41,6 +41,7 @@
   ./hardware/video/bumblebee.nix
   ./hardware/video/nvidia.nix
   ./hardware/video/ati.nix
+  ./installer/tools/auto-upgrade.nix
   ./installer/tools/nixos-checkout.nix
   ./installer/tools/tools.nix
   ./misc/assertions.nix
@@ -60,7 +61,6 @@
   ./programs/command-not-found/command-not-found.nix
   ./programs/dconf.nix
   ./programs/environment.nix
-  ./programs/info.nix
   ./programs/ibus.nix
   ./programs/kbdlight.nix
   ./programs/light.nix
@@ -72,9 +72,9 @@
   ./programs/ssmtp.nix
   ./programs/uim.nix
   ./programs/venus.nix
-  ./programs/virtualbox-host.nix
   ./programs/wvdial.nix
   ./programs/freetds.nix
+  ./programs/xfs_quota.nix
   ./programs/zsh/zsh.nix
   ./rename.nix
   ./security/apparmor.nix
@@ -279,10 +279,12 @@
   ./services/networking/dnsmasq.nix
   ./services/networking/docker-registry-server.nix
   ./services/networking/ejabberd.nix
+  ./services/networking/fan.nix
   ./services/networking/firefox/sync-server.nix
   ./services/networking/firewall.nix
   ./services/networking/flashpolicyd.nix
   ./services/networking/freenet.nix
+  ./services/networking/gateone.nix
   ./services/networking/git-daemon.nix
   ./services/networking/gnunet.nix
   ./services/networking/gogoclient.nix
@@ -328,6 +330,7 @@
   ./services/networking/searx.nix
   ./services/networking/seeks.nix
   ./services/networking/skydns.nix
+  ./services/networking/shout.nix
   ./services/networking/spiped.nix
   ./services/networking/sslh.nix
   ./services/networking/ssh/lshd.nix
@@ -485,6 +488,7 @@
   ./virtualisation/openvswitch.nix
   ./virtualisation/parallels-guest.nix
   ./virtualisation/virtualbox-guest.nix
+  ./virtualisation/virtualbox-host.nix
   ./virtualisation/vmware-guest.nix
   ./virtualisation/xen-dom0.nix
 ]

@@ -1,19 +1,21 @@
-{ stdenv, fetchurl, emacs, texinfo }:
+{ stdenv, fetchFromGitHub, emacs, texinfo }:
 
 let
-  version = "13.10";
+  version = "13.14-153-g318ccab";      # git describe --tags
 in
 stdenv.mkDerivation {
   name = "haskell-mode-${version}";
 
-  src = fetchurl {
-    url = "https://github.com/haskell/haskell-mode/archive/v${version}.tar.gz";
-    sha256 = "0hcg7wpalcdw8j36m8vd854zrrgym074r7m903rpwfrhx9mlg02b";
+  src = fetchFromGitHub {
+    owner = "haskell";
+    repo = "haskell-mode";
+    rev = "v${version}";
+    sha256 = "1n08fmaf7q13y68xyzs4h686hvb7n5mdyvn1zy81d7gh0m5013k4";
   };
 
   buildInputs = [ emacs texinfo ];
 
-  makeFlags = "VERSION=${version} GIT_VERSION=${version}";
+  makeFlags = "VERSION=v${version} GIT_VERSION=v${version}";
 
   installPhase = ''
     mkdir -p $out/share/emacs/site-lisp
@@ -21,6 +23,11 @@ stdenv.mkDerivation {
     mkdir -p $out/share/info
     cp -v *.info* $out/share/info/
   '';
+
+  # The test suite must run *after* copying the generated files to $out
+  # because "make check" implies "make clean".
+  doInstallCheck = true;
+  installCheckTarget = "check";
 
   meta = {
     homepage = "http://github.com/haskell/haskell-mode";

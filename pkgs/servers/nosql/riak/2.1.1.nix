@@ -36,11 +36,11 @@ stdenv.mkDerivation rec {
 
   postPatch = ''
     sed -i deps/node_package/priv/base/env.sh \
-      -e 's@{{platform_data_dir}}@$RIAK_DATA_DIR@' \
+      -e 's@{{platform_data_dir}}@''${RIAK_DATA_DIR:-/var/db/riak}@' \
       -e 's@^RUNNER_SCRIPT_DIR=.*@RUNNER_SCRIPT_DIR='$out'/bin@' \
       -e 's@^RUNNER_BASE_DIR=.*@RUNNER_BASE_DIR='$out'@' \
-      -e 's@^RUNNER_ETC_DIR=.*@RUNNER_ETC_DIR=$RIAK_ETC_DIR@' \
-      -e 's@^RUNNER_LOG_DIR=.*@RUNNER_LOG_DIR=$RIAK_LOG_DIR@'
+      -e 's@^RUNNER_ETC_DIR=.*@RUNNER_ETC_DIR=''${RIAK_ETC_DIR:-/etc/riak}@' \
+      -e 's@^RUNNER_LOG_DIR=.*@RUNNER_LOG_DIR=''${RIAK_LOG_DIR:-/var/log}@'
   '';
 
   preBuild = ''
@@ -89,6 +89,6 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     maintainers = with maintainers; [ cstrahan ];
     description = "Dynamo inspired NoSQL DB by Basho";
-    platforms   = platforms.linux;
+    platforms   = [ "x86_64-linux" ];
   };
 }

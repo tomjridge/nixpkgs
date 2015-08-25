@@ -55,7 +55,7 @@ rec {
         };
       };
 
-      closed = closeModules (modules ++ [ internalModule ]) (specialArgs // { inherit config options; lib = import ./.; });
+      closed = closeModules (modules ++ [ internalModule ]) ({ inherit config options; lib = import ./.; } // specialArgs);
 
       # Note: the list of modules is reversed to maintain backward
       # compatibility with the old module system.  Not sure if this is
@@ -261,11 +261,16 @@ rec {
   evalOptionValue = loc: opt: defs:
     let
       # Add in the default value for this option, if any.
-      defs' = (optional (opt ? default)
-        { file = head opt.declarations; value = mkOptionDefault opt.default; }) ++ defs;
+      defs' =
+          (optional (opt ? default)
+            { file = head opt.declarations; value = mkOptionDefault opt.default; }) ++ defs;
 
       # Handle properties, check types, and merge everything together.
-      res = mergeDefinitions loc opt.type defs';
+      res =
+        if opt.readOnly or false && length defs' > 1 then
+          throw "The option `${showOption loc}' is read-only, but it's set multiple times."
+        else
+          mergeDefinitions loc opt.type defs';
 
       # Check whether the option is defined, and apply the ‘apply’
       # function to the merged value.  This allows options to yield a
@@ -280,7 +285,7 @@ rec {
 
     in opt //
       { value = addErrorContext "while evaluating the option `${showOption loc}':" value;
-        definitions = map (def: def.value) defsFinal;
+        definitions = map (def: def.value) res.defsFinal;
         files = map (def: def.file) res.defsFinal;
         inherit (res) isDefined;
       };
@@ -387,7 +392,6 @@ rec {
     let
       defaultPrio = 100;
       getPrio = def: if def.value._type or "" == "override" then def.value.priority else defaultPrio;
-      min = x: y: if x < y then x else y;
       highestPrio = foldl' (prio: def: min (getPrio def) prio) 9999 defs;
       strip = def: if def.value._type or "" == "override" then def // { value = def.value.content; } else def;
     in concatMap (def: if getPrio def == highestPrio then [(strip def)] else []) defs;

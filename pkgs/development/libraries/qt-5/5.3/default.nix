@@ -86,6 +86,8 @@ stdenv.mkDerivation rec {
   preConfigure = ''
     export LD_LIBRARY_PATH="$PWD/qtbase/lib:$PWD/qtbase/plugins/platforms:$PWD/qttools/lib:$LD_LIBRARY_PATH"
     export MAKEFLAGS=-j$NIX_BUILD_CORES
+    export configureFlags+="-plugindir $out/lib/qt5/plugins -importdir $out/lib/qt5/imports -qmldir $out/lib/qt5/qml"
+    export configureFlags+=" -docdir $out/share/doc/qt5"
   '';
 
   prefixKey = "-prefix ";
@@ -176,7 +178,9 @@ stdenv.mkDerivation rec {
   ++ optional (postgresql != null) postgresql
   ++ optionals gtkStyle [gnome_vfs libgnomeui gtk GConf];
 
-  buildInputs = [ gdb bison flex gperf ruby ];
+  buildInputs =
+    [ bison flex gperf ruby ]
+    ++ optional developerBuild gdb;
 
   nativeBuildInputs = [ python perl pkgconfig ];
 
