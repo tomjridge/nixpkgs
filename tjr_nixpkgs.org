@@ -280,3 +280,60 @@ error: build of ‘/nix/store/70sz72xcbz26n0lkh1z905snfnxkaxxz-p3.drv’ failed
 
   - want to make a static version of mycsv, including p1 dependencies
     - just copy and paste the p1 default.nix into .nix/2015-07-06.nix
+* 2015-07-28 merge with upstream
+
+https://help.github.com/articles/syncing-a-fork/
+
+* 2015-08-25 merge with upstream
+* 2015-08-25 upgrade xpra to use lz4
+
+  - looks like we need to try to use pip with nix
+  - https://nixos.org/wiki/Development_Environments#Example_3:_A_simple_impure_environment_to_use_virtualenv.2Fpip_with_nix-shell
+  - what is a virtualenv? a python isolation environment
+
+
+  - compiling python-lz4
+    - python setup.py build
+    - python setup.py install
+  - we have python2.7 and python3.4
+  - looks like we can use eg pyxml as a basis to work from
+
+
+---
+
+
+nix-build -A python_lz4 gives
+
+> Checking .pth file support in /nix/store/wij7slihixnzb0j6hrsbn540qv15gvsk-python-lz4/lib/python2.7/site-packages/
+> /nix/store/ss1aq46xwhnqikq5bjs02sb9xrim2bb3-python-2.7.10/bin/python -E -c pass
+> TEST FAILED: /nix/store/wij7slihixnzb0j6hrsbn540qv15gvsk-python-lz4/lib/python2.7/site-packages/ does NOT support .pth files
+> error: bad install directory or PYTHONPATH
+> 
+> You are attempting to install a package to a directory that is not
+> on PYTHONPATH and which Python does not read ".pth" files from.  The
+> installation directory you specified (via --install-dir, --prefix, or
+> the distutils default setting) was:
+> 
+>     /nix/store/wij7slihixnzb0j6hrsbn540qv15gvsk-python-lz4/lib/python2.7/site-packages/
+> 
+> and your PYTHONPATH environment variable currently contains:
+> 
+>     '/nix/store/ss1aq46xwhnqikq5bjs02sb9xrim2bb3-python-2.7.10/lib/python2.7/site-packages:/nix/store/5308x1wc8dhsi9vbhxqzpcjcmlprqv6h-python2.7-setuptools-18.0.1/lib/python2.7/site-packages'
+> 
+> Here are some of your options for correcting the problem:
+> 
+> * You can choose a different installation directory, i.e., one that is
+>   on PYTHONPATH or supports .pth files
+> 
+> * You can add the installation directory to the PYTHONPATH environment
+>   variable.  (It must then also be on PYTHONPATH whenever you run
+>   Python and want to use the package(s) you are installing.)
+> 
+> * You can set up the installation directory to support ".pth" files by
+>   using one of the approaches described here:
+> 
+>   https://pythonhosted.org/setuptools/easy_install.html#custom-installation-locations
+> 
+> Please make the appropriate changes for your system and try again.
+> builder for ‘/nix/store/8vrhakr8ri5avwpl1fj4f4b32i9rzmkn-python-lz4.drv’ failed with exit code 1
+> error: build of ‘/nix/store/8vrhakr8ri5avwpl1fj4f4b32i9rzmkn-python-lz4.drv’ failed

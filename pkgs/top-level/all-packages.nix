@@ -8753,6 +8753,8 @@ let
 
   ecdsa = callPackage ../development/python-modules/ecdsa { };
 
+  python_lz4 = callPackage ../development/python-modules/lz4 { };
+
   numeric = callPackage ../development/python-modules/numeric { };
 
   pil = pythonPackages.pil;
