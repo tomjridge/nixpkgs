@@ -394,3 +394,61 @@ nix-build -A python_lz4 gives
   - xpra start ssh:pc1177:100 --compressors=lz4 --start-child=eclipse
     
 
+* 2015-09-09 ocsigenserver
+
+  - get ocaml working again
+
+  - nix-shell for eliom
+    - Fatal error: exception Fl_package_base.No_such_package("eliom.client", "") 
+      - fixed by adding findlib
+    - Fatal error: exception Fl_package_base.No_such_package("ocsigenserver.cookies", "required by `eliom.client'")
+      - lib not propagated?
+
+Fatal error: cannot load shared library dllssl_threads_stubs
+Reason: libcrypto.so.1.0.0: cannot open shared object file: No such file or directory
+Makefile:58: recipe for target 'test.byte' failed
+make: *** [test.byte] Error 2
+
+
+  - openssl contains this lib, but not picked up?
+    - NIX_LDFLAGS is the var that should be used for linking; how is this used in nix shell?
+    - could just be that the compiler should pick this up, but doesn't, so add to hook? but nix_ldflags doesn't contain paths, but linker options
+    - fixed by adding openssl/lib to LD_LIBRARY_PATH
+
+Fatal error: cannot load shared library dlllwt-unix_stubs
+Reason: dlllwt-unix_stubs.so: cannot open shared object file: No such file or directory
+Makefile:58: recipe for target 'test.byte' failed
+make: *** [test.byte] Error 2
+
+  - /nix/store/qmw8i4vdm20pnbx28xg29cknnv1w6cjm-ocaml-lwt-2.4.6/lib is in NIX_LDFLAGS, but need /nix/store/qmw8i4vdm20pnbx28xg29cknnv1w6cjm-ocaml-lwt-2.4.6/lib/ocaml/4.01.0/site-lib/lwt/ in LDFLAGS; but this should be found by findlib
+    - can we get findlib to show info
+      - yes, findlib has this /nix/store/qmw8i4vdm20pnbx28xg29cknnv1w6cjm-ocaml-lwt-2.4.6/lib/ocaml/4.01.0/site-lib/
+        - so findlib can find it; 
+      - ocamlfind -query -l-format lwt gives
+        - -ccopt -L/nix/store/qmw8i4vdm20pnbx28xg29cknnv1w6cjm-ocaml-lwt-2.4.6/lib/ocaml/4.01.0/site-lib/lwt
+      - so we need to include all these in LDFLAGS?
+    - so when NIX_LDFLAGS is updated, somehow it should reference .../ocaml/4.01.0/site-lib/lwt as well?
+
+
+  - ocaml package setup hook? http://nixos.org/releases/nixpkgs/nixpkgs-0.12/manual/#chap-stdenv
+    - hook addOCamlPath
+    - where defined?
+      - could be called through envHooks or setupHook
+      - but tihs only includes .../site-lib, not subdirs, and only affects OCAMLPATH and OCAMLFIND_DESTDIR
+      - how do normal nix packages access libs from other places?
+      - how does an ocaml package which depends on another package with a dll get built?
+
+
+
+https://github.com/diml/utop CAML_LD_LIBRARY_PATH not set properly
+
+  - yes, this seems to be the case
+  - how can we get this 
+
+http://lists.science.uu.nl/pipermail/nix-dev/2015-April/016923.html  fix for CAML_LD_LIBRARY_PATH
+
+development/tools/ocaml/utop/default.nix:    wrapProgram $prog --set CAML_LD_LIBRARY_PATH "${ocaml_lwt}"/lib/ocaml/${ocamlVersion}/site-lib/lwt/:"${lambdaTerm}"/lib/ocaml/${ocamlVersion}/site-lib/lambda-term/:'$CAML_LD_LIBRARY_PATH' --set OCAMLPATH "${ocaml_lwt}"/lib/ocaml/${ocamlVersion}/site-lib:${ocaml_react}/lib/ocaml/${ocamlVersion}/site-lib:${camomile}/lib/ocaml/${ocamlVersion}/site-lib:${zed}/lib/ocaml/${ocamlVersion}/site-lib:${lambdaTerm}/lib/ocaml/${ocamlVersion}/site-lib:"$out"/lib/ocaml/${ocamlVersion}/site-lib:'$OCAMLPATH'
+
+
+  - so an immediate fix is just to put all this stuff in CAML_LD_LIBRARY_PATH
+    - or just install via opam
