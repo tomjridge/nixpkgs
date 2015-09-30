@@ -452,3 +452,41 @@ development/tools/ocaml/utop/default.nix:    wrapProgram $prog --set CAML_LD_LIB
 
   - so an immediate fix is just to put all this stuff in CAML_LD_LIBRARY_PATH
     - or just install via opam
+* 2015-09-10 nixpkgs eliom bug report
+
+make test.opt
+
+ocsigenserver.opt  -c local/etc/client_html/client_html-test.conf
+ocsigenserver.opt: main: Fatal - Findlib package sqlite3 [while trying to load ocsigenserver.ext.ocsipersist-sqlite] not found (required by `ocsigenserver.ext.ocsipersist-sqlite'): maybe you forgot <findlib path="..."/>?
+Makefile:60: recipe for target 'test.opt' failed
+make: *** [test.opt] Error 53
+
+after adding ocaml_sqlite3, everything works
+
+----
+
+_2015-09-16 
+
+make test.opt works
+
+make test.byte doesn't work
+
+----
+
+  - git clone -b fix-ocsigen --depth 1 https://github.com/vbgl/nixpkgs
+    - in /tmp
+
+
+  - NIX_PATH=/tmp nix-shell -pure
+    - in client_html
+
+ocsigenserver  -c local/etc/client_html/client_html-test.conf
+.ocsigenserver-wrapped: main: Fatal - While loading /nix/store/lg4g6l63j6rra6vg9cf6ilhsmnwv1nav-ocaml-sqlite3-2.0.9/lib/ocaml/4.01.0/site-lib/sqlite3/sqlite3.cma: error loading shared library: dllsqlite3_stubs.so: dllsqlite3_stubs.so: cannot open shared object file: No such file or directory
+Makefile:58: recipe for target 'test.byte' failed
+make: *** [test.byte] Error 52
+
+fix was to add ocaml_sqlite3 to mkpath
+
+--
+
+commented on nixpkgs issue; will probably be closed shortly
