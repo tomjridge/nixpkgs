@@ -1,4 +1,4 @@
-{stdenv, fetchurl, guile_1_8, qt4, zlib, xmodmap, which, makeWrapper, freetype,
+{stdenv, fetchurl, guile_1_8, qt4, zlib, xmodmap, which, makeWrapper, freetype, fetchsvn,
  tex ? null,
  aspell ? null,
  ghostscriptX ? null,
@@ -9,7 +9,7 @@
 
 let 
   pname = "TeXmacs";
-  version = "1.99.2";
+  version = "svn";
   extraFontsSrc = fetchurl {
     url = "ftp://ftp.texmacs.org/pub/TeXmacs/fonts/TeXmacs-extra-fonts-1.0-noarch.tar.gz";
     sha256 = "0hylgjmd95y9yahbblmawkkw0i71vb145xxv2xqrmff81301n6k7";
@@ -38,9 +38,9 @@ in
 stdenv.mkDerivation rec {
   name = "${pname}-${version}";
 
-  src = fetchurl {
-    url = "http://www.texmacs.org/Download/ftp/tmftp/source/TeXmacs-${version}-src.tar.gz";
-    sha256 = "0l48g9746igiaxw657shm8g3xxk565vzsviajlrxqyljbh6py0fs";
+  src = fetchsvn {
+    url = "svn://svn.savannah.gnu.org/texmacs/trunk/src";
+    sha256 = "146d17rpf958dxf8zyms90bssdgcf5g0x9bra2vdphvlvq3j8akd";
   };
 
   buildInputs = [ guile_1_8 qt4 makeWrapper ghostscriptX freetype ];
