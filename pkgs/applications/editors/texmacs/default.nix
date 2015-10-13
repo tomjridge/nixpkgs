@@ -40,7 +40,8 @@ stdenv.mkDerivation rec {
 
   src = fetchsvn {
     url = "svn://svn.savannah.gnu.org/texmacs/trunk/src";
-    sha256 = "146d17rpf958dxf8zyms90bssdgcf5g0x9bra2vdphvlvq3j8akd";
+    rev = 9790;
+    sha256 = "0zwhad1nbm5kj97awjiv5yakhd8ywimr6gm0zv989am3pjw811ic";
   };
 
   buildInputs = [ guile_1_8 qt4 makeWrapper ghostscriptX freetype ];

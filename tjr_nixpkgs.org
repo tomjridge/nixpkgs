@@ -490,3 +490,5 @@ fix was to add ocaml_sqlite3 to mkpath
 --
 
 commented on nixpkgs issue; will probably be closed shortly
+* 2015-10-09 updating nix
+
