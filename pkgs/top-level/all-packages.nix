@@ -14516,6 +14516,12 @@ let
     java = if stdenv.isLinux then jre else jdk;
   };
 
+  isabelle-2015 = import ../applications/science/logic/isabelle/isabelle-2015.nix {
+    inherit (pkgs) stdenv fetchurl nettools perl polyml;
+    inherit (pkgs.emacs24Packages) proofgeneral;
+    java = if stdenv.isLinux then jre else jdk;
+  };
+
   iprover = callPackage ../applications/science/logic/iprover {};
 
   lean = callPackage ../applications/science/logic/lean {};
