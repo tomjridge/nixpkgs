@@ -496,3 +496,69 @@ commented on nixpkgs issue; will probably be closed shortly
 
   
 pkgs/applications/science/logic/isabelle
+
+* 2015-11-17 debugging texmacs keyboard problems
+
+  - looks like we are missing keyboard bindings
+
+  - grep -R kbd *.scm
+
+src/Edit/Interface/edit_keyboard.cpp
+
+
+TeXmacs/progs/init-texmacs.scm
+TeXmacs/progs/text/text-edit.scm
+TeXmacs/progs/text/text-menu.scm
+
+
+X TeXmacs/progs/text/text-kbd.scm
+X TeXmacs/progs/texmacs/keyboard/prefix-kbd.scm
+
+XX TeXmacs/progs/generic/generic-kbd.scm
+
+TeXmacs/progs/generic/generic-edit.scm
+
+
+---
+
+  - mode seems ok - like-emacs?
+---
+
+copied emacs kbd-map section from generic-kbd to .TeXmacs/progs/my-init-buffer.scm, things work fine!
+
+--
+
+export TEXMACS_PATH=/nix/store/00ri6q88bi6l9i6aqmn99ymn1blqsck8-TeXmacs-svn
+
+tr61@pc1177:~$ texmacs
+/nix/store/00ri6q88bi6l9i6aqmn99ymn1blqsck8-TeXmacs-svn/bin/.texmacs-wrapped: line 38: exec: texmacs.bin: not found
+
+
+tr61@pc1177:~$ find /nix/store/00ri6q88bi6l9i6aqmn99ymn1blqsck8-TeXmacs-svn |grep texmacs.bin
+/nix/store/00ri6q88bi6l9i6aqmn99ymn1blqsck8-TeXmacs-svn/libexec/TeXmacs/bin/texmacs.bin
+
+probably the datadir is in share which is nixpkgs specific
+
+the executable texmacs.bin appears to be in libexec
+
+
+the wrapper sets env vars
+ 
+  - prefix="/nix/store/00ri6q88bi6l9i6aqmn99ymn1blqsck8-TeXmacs-svn"
+  - TEXMACS_PATH=${prefix}/share/TeXmacs
+  - TEXMACS_BIN_PATH=${prefix}/libexec/TeXmacs
+  - PATH="$TEXMACS_BIN_PATH/bin:$PATH"
+  - exec texmacs.bin
+
+
+http://www.texmacs.org/tmweb/manual/webman-scheme.en.html - only $TEXMACS_PATH/progs/init-texmacs.scm and TEXMACS_HOME_PATH/progs/my-init-texmacs.scm
+
+and init-texmacs.scm doesn't load generic keyboard? but it looks like it does using lazy-keyboard
+
+
+---
+
+could be that we just have to restart after selecting look and feel? yes, this fixes things
+
+
+phew!
