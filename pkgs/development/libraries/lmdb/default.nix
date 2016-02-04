@@ -1,17 +1,19 @@
 { stdenv, fetchzip }:
 
-stdenv.mkDerivation rec {
+let optional = stdenv.lib.optional;
+in stdenv.mkDerivation rec {
   name = "lmdb-${version}";
-  version = "0.9.15";
+  version = "0.9.16";
 
   src = fetchzip {
     url = "https://github.com/LMDB/lmdb/archive/LMDB_${version}.tar.gz";
-    sha256 = "0p79fpyh1yx2jg1f0kag5zsdn4spkgs1j3dxibvqdy32wkbpxd0g";
+    sha256 = "1lkmngscijwiz09gdkqygdp87x55vp8gb4fh4vq7s34k4jv0327l";
   };
 
   postUnpack = "sourceRoot=\${sourceRoot}/libraries/liblmdb";
 
-  makeFlags = "prefix=$(out)";
+  makeFlags = ["prefix=$(out)"]
+              ++ optional stdenv.cc.isClang "CC=clang";
 
   doCheck = true;
   checkPhase = "make test";

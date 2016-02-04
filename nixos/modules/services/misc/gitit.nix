@@ -35,6 +35,8 @@ let
       };
 
       haskellPackages = mkOption {
+        type = types.attrsOf types.package;
+        default = pkgs.haskellPackages;
         defaultText = "pkgs.haskellPackages";
         example = literalExample "pkgs.haskell.packages.ghc784";
         description = "haskellPackages used to build gitit and plugins.";
@@ -99,7 +101,7 @@ let
       };
 
       authenticationMethod = mkOption {
-        type = types.enum [ "form" "http" "generic"];
+        type = types.enum [ "form" "http" "generic" "github" ];
         default = "form";
         description = ''
           'form' means that users will be logged in and registered using forms
@@ -137,6 +139,7 @@ let
 
       staticDir = mkOption {
         type = types.path;
+        default = gititShared + "/data/static";
         description = ''
           Specifies the path of the static directory (containing javascript,
           css, and images).  If it does not exist, gitit will create it and
@@ -207,6 +210,7 @@ let
 
       templatesDir = mkOption {
         type = types.path;
+        default = gititShared + "/data/templates";
         description = ''
           Specifies the path of the directory containing page templates.  If it
           does not exist, gitit will create it with default templates.  Users
@@ -288,6 +292,7 @@ let
 
       plugins = mkOption {
         type = with types; listOf str;
+        default = [ (gititShared + "/plugins/Dot.hs") ];
         description = ''
           Specifies a list of plugins to load. Plugins may be specified either
           by their path or by their module name. If the plugin name starts
@@ -537,6 +542,42 @@ video/x-ms-wmx  wmx
           through xss-sanitize.  Set to no only if you trust all of your users.
         '';
       };
+
+      oauthClientId = mkOption {
+        type = with types; nullOr str;
+        default = null;
+        description = "OAuth client ID";
+      };
+
+      oauthClientSecret = mkOption {
+        type = with types; nullOr str;
+        default = null;
+        description = "OAuth client secret";
+      };
+
+      oauthCallback = mkOption {
+        type = with types; nullOr str;
+        default = null;
+        description = "OAuth callback URL";
+      };
+
+      oauthAuthorizeEndpoint = mkOption {
+        type = with types; nullOr str;
+        default = null;
+        description = "OAuth authorize endpoint";
+      };
+
+      oauthAccessTokenEndpoint = mkOption {
+        type = with types; nullOr str;
+        default = null;
+        description = "OAuth access token endpoint";
+      };
+
+      githubOrg = mkOption {
+        type = with types; nullOr str;
+        default = null;
+        description = "Github organization";
+      };
   };
 
   configFile = pkgs.writeText "gitit.conf" ''
@@ -587,6 +628,14 @@ video/x-ms-wmx  wmx
     pdf-export: ${toYesNo cfg.pdfExport}
     pandoc-user-data: ${toString cfg.pandocUserData}
     xss-sanitize: ${toYesNo cfg.xssSanitize}
+
+    [Github]
+    oauthclientid: ${toString cfg.oauthClientId}
+    oauthclientsecret: ${toString cfg.oauthClientSecret}
+    oauthcallback: ${toString cfg.oauthCallback}
+    oauthauthorizeendpoint: ${toString cfg.oauthAuthorizeEndpoint}
+    oauthaccesstokenendpoint: ${toString cfg.oauthAccessTokenEndpoint}
+    github-org: ${toString cfg.githubOrg}
   '';
 
 in
@@ -596,13 +645,6 @@ in
   options.services.gitit = gititOptions;
 
   config = mkIf cfg.enable {
-
-    services.gitit = {
-      haskellPackages = mkDefault pkgs.haskellPackages;
-      staticDir = gititShared + "/data/static";
-      templatesDir = gititShared + "/data/templates";
-      plugins = [ ];
-    };
 
     users.extraUsers.gitit = {
       group = config.users.extraGroups.gitit.name;
@@ -681,4 +723,3 @@ NAMED
     };
   };
 }
-

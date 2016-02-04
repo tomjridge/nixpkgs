@@ -1,15 +1,15 @@
-# FIXME: upgrading qt5Full (Qt 5.3) to qt5.{base,multimedia} (Qt 5.4) breaks
-# the default Qt audio capture source!
-{ stdenv, fetchFromGitHub, fftw, freeglut, qt5Full
-, alsaSupport ? false, alsaLib ? null
-, jackSupport ? false, libjack2 ? null }:
+{ stdenv, fetchFromGitHub, fftw, freeglut, qtbase, qtmultimedia
+, alsaSupport ? true, alsaLib ? null
+, jackSupport ? false, libjack2 ? null
+, portaudioSupport ? false, portaudio ? null }:
 
 assert alsaSupport -> alsaLib != null;
 assert jackSupport -> libjack2 != null;
+assert portaudioSupport -> portaudio != null;
 
-let version = "1.0.8"; in
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   name = "fmit-${version}";
+  version = "1.0.8";
 
   src = fetchFromGitHub {
     sha256 = "04s7xcgmi5g58lirr48vf203n1jwdxf981x1p6ysbax24qwhs2kd";
@@ -18,9 +18,10 @@ stdenv.mkDerivation {
     owner = "gillesdegottex";
   };
 
-  buildInputs = [ fftw freeglut qt5Full ]
-    ++ stdenv.lib.optional alsaSupport [ alsaLib ]
-    ++ stdenv.lib.optional jackSupport [ libjack2 ];
+  buildInputs = [ fftw freeglut qtbase qtmultimedia ]
+    ++ stdenv.lib.optionals alsaSupport [ alsaLib ]
+    ++ stdenv.lib.optionals jackSupport [ libjack2 ]
+    ++ stdenv.lib.optionals portaudioSupport [ portaudio ];
 
   configurePhase = ''
     mkdir build
@@ -28,6 +29,7 @@ stdenv.mkDerivation {
     qmake \
       CONFIG+=${stdenv.lib.optionalString alsaSupport "acs_alsa"} \
       CONFIG+=${stdenv.lib.optionalString jackSupport "acs_jack"} \
+      CONFIG+=${stdenv.lib.optionalString portaudioSupport "acs_portaudio"} \
       PREFIX="$out" PREFIXSHORTCUT="$out" \
       ../fmit.pro
   '';
@@ -35,7 +37,6 @@ stdenv.mkDerivation {
   enableParallelBuilding = true;
 
   meta = with stdenv.lib; {
-    inherit version;
     description = "Free Musical Instrument Tuner";
     longDescription = ''
       FMIT is a graphical utility for tuning musical instruments, with error

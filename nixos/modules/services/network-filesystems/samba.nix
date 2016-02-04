@@ -85,7 +85,8 @@ in
       package = mkOption {
         type = types.package;
         default = pkgs.samba;
-        example = pkgs.samba4;
+        defaultText = "pkgs.samba";
+        example = literalExample "pkgs.samba4";
         description = ''
           Defines which package should be used for the samba server.
         '';
@@ -97,8 +98,8 @@ in
         description = ''
           Enabling this will add a line directly after pam_unix.so.
           Whenever a password is changed the samba password will be updated as well.
-          However you still yave to add the samba password once using smbpasswd -a user
-          If you don't want to maintain an extra pwd database you still can send plain text
+          However, you still have to add the samba password once, using smbpasswd -a user.
+          If you don't want to maintain an extra password database, you still can send plain text
           passwords which is not secure.
         '';
       };

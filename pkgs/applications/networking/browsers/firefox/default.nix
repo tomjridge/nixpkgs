@@ -1,5 +1,5 @@
 { lib, stdenv, fetchurl, pkgconfig, gtk, gtk3, pango, perl, python, zip, libIDL
-, libjpeg, zlib, dbus, dbus_glib, bzip2, xlibs
+, libjpeg, zlib, dbus, dbus_glib, bzip2, xorg
 , freetype, fontconfig, file, alsaLib, nspr, nss, libnotify
 , yasm, mesa, sqlite, unzip, makeWrapper, pysqlite
 , hunspell, libevent, libstartup_notification, libvpx
@@ -16,24 +16,26 @@
 
 assert stdenv.cc ? libc && stdenv.cc.libc != null;
 
-let version = "40.0.2"; in
+let
 
-stdenv.mkDerivation rec {
-  name = "firefox-${version}";
+common = { pname, version, sha256 }: stdenv.mkDerivation rec {
+  name = "${pname}-unwrapped-${version}";
 
   src = fetchurl {
-    url = "http://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${version}/source/firefox-${version}.source.tar.bz2";
-    sha1 = "b5d79fa3684284bfeb7277e99c756b8688e8121d";
+    url =
+      let ext = if lib.versionAtLeast version "41.0" then "xz" else "bz2";
+      in "http://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${version}/source/firefox-${version}.source.tar.${ext}";
+    inherit sha256;
   };
 
   buildInputs =
     [ pkgconfig gtk perl zip libIDL libjpeg zlib bzip2
-      python dbus dbus_glib pango freetype fontconfig xlibs.libXi
-      xlibs.libX11 xlibs.libXrender xlibs.libXft xlibs.libXt file
-      alsaLib nspr nss libnotify xlibs.pixman yasm mesa
-      xlibs.libXScrnSaver xlibs.scrnsaverproto pysqlite
-      xlibs.libXext xlibs.xextproto sqlite unzip makeWrapper
-      hunspell libevent libstartup_notification libvpx cairo
+      python dbus dbus_glib pango freetype fontconfig xorg.libXi
+      xorg.libX11 xorg.libXrender xorg.libXft xorg.libXt file
+      alsaLib nspr nss libnotify xorg.pixman yasm mesa
+      xorg.libXScrnSaver xorg.scrnsaverproto pysqlite
+      xorg.libXext xorg.xextproto sqlite unzip makeWrapper
+      hunspell libevent libstartup_notification libvpx /* cairo */
       gstreamer gst_plugins_base icu libpng jemalloc
       libpulseaudio # only headers are needed
     ]
@@ -55,7 +57,7 @@ stdenv.mkDerivation rec {
       "--enable-system-hunspell"
       "--enable-system-pixman"
       "--enable-system-sqlite"
-      "--enable-system-cairo"
+      #"--enable-system-cairo"
       "--enable-gstreamer"
       "--enable-startup-notification"
       "--enable-content-sandbox"            # available since 26.0, but not much info available
@@ -66,6 +68,7 @@ stdenv.mkDerivation rec {
       "--disable-installer"
       "--disable-updater"
       "--enable-jemalloc"
+      "--disable-gconf"
     ]
     ++ lib.optional enableGTK3 "--enable-default-toolkit=cairo-gtk3"
     ++ (if debugBuild then [ "--enable-debug" "--enable-profiling" ]
@@ -80,7 +83,11 @@ stdenv.mkDerivation rec {
     ''
       mkdir ../objdir
       cd ../objdir
-      configureScript=../mozilla-release/configure
+      if [ -e ../${pname}-${version} ]; then
+        configureScript=../${pname}-${version}/configure
+      else
+        configureScript=../mozilla-*/configure
+      fi
     '';
 
   preInstall =
@@ -92,19 +99,25 @@ stdenv.mkDerivation rec {
   postInstall =
     ''
       # For grsecurity kernels
-      paxmark m $out/lib/${name}/{firefox,firefox-bin,plugin-container}
+      paxmark m $out/lib/${pname}-${version}/{firefox,firefox-bin,plugin-container}
 
       # Remove SDK cruft. FIXME: move to a separate output?
       rm -rf $out/share/idl $out/include $out/lib/firefox-devel-*
     '' + lib.optionalString enableGTK3
+      # argv[0] must point to firefox itself
     ''
       wrapProgram "$out/bin/firefox" \
+        --argv0 "$out/bin/.firefox-wrapped" \
         --prefix XDG_DATA_DIRS : "$GSETTINGS_SCHEMAS_PATH:" \
         --suffix XDG_DATA_DIRS : "$XDG_ICON_DIRS"
+    '' +
+      # some basic testing
+    ''
+      "$out/bin/firefox" --version
     '';
 
   meta = {
-    description = "Web browser";
+    description = "A web browser" + lib.optionalString (pname == "firefox-esr") " (Extended Support Release)";
     homepage = http://www.mozilla.com/en-US/firefox/;
     maintainers = with lib.maintainers; [ eelco ];
     platforms = lib.platforms.linux;
@@ -114,4 +127,20 @@ stdenv.mkDerivation rec {
     inherit gtk nspr version;
     isFirefox3Like = true;
   };
+};
+
+in {
+
+  firefox-unwrapped = common {
+    pname = "firefox";
+    version = "44.0";
+    sha256 = "07ac1h6ib36nm4a0aykh1z36vgw6wqlblil0zsj0lchdhksb10pa";
+  };
+
+  firefox-esr-unwrapped = common {
+    pname = "firefox-esr";
+    version = "38.5.2esr";
+    sha256 = "0xqirpiys2pgzk9hs4s93svknc0sss8ry60zar7n9jj74cgz590m";
+  };
+
 }

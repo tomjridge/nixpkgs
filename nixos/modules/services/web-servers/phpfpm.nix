@@ -36,7 +36,9 @@ in {
       };
 
       phpPackage = mkOption {
+        type = types.package;
         default = pkgs.php;
+        defaultText = "pkgs.php";
         description = ''
           The PHP package to use for running the FPM service.
         '';
@@ -44,8 +46,7 @@ in {
 
       phpIni = mkOption {
         type = types.path;
-        default = "${cfg.phpPackage}/etc/php-recommended.ini";
-        description = "php.ini file to use.";
+        description = "PHP configuration file to use.";
       };
 
       poolConfigs = mkOption {
@@ -85,6 +86,8 @@ in {
         PIDFile = pidFile;
       };
     };
+
+    services.phpfpm.phpIni = mkDefault "${cfg.phpPackage}/etc/php-recommended.ini";
 
   };
 }

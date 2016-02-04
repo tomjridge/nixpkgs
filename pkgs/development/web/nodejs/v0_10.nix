@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "0.10.38";
+  version = "0.10.41";
 
   # !!! Should we also do shared libuv?
   deps = {
@@ -32,7 +32,7 @@ in stdenv.mkDerivation {
 
   src = fetchurl {
     url = "http://nodejs.org/dist/v${version}/node-v${version}.tar.gz";
-    sha256 = "12xpa9jzry5g0j41908498qqs8v0q6miqkv6mggyzas8bvnshgai";
+    sha256 = "15f9n9pydfb3f6gbbxnh6qqmkmwr0j3gcs8cbnvl69f4lpi99xkr";
   };
 
   configureFlags = concatMap sharedConfigureFlags (builtins.attrNames deps) ++
@@ -40,9 +40,11 @@ in stdenv.mkDerivation {
 
   prePatch = ''
     patchShebangs .
+    sed -i 's/raise.*No Xcode or CLT version detected.*/version = "7.0.0"/' deps/npm/node_modules/node-gyp/gyp/pylib/gyp/xcode_emulation.py
+    sed -i 's/raise.*No Xcode or CLT version detected.*/version = "7.0.0"/' tools/gyp/pylib/gyp/xcode_emulation.py
   '';
 
-  patches = stdenv.lib.optional stdenv.isDarwin ./no-xcode.patch;
+  patches = stdenv.lib.optionals stdenv.isDarwin [ ./default-arch.patch ./no-xcode.patch ];
 
   postPatch = stdenv.lib.optionalString stdenv.isDarwin ''
     (cd tools/gyp; patch -Np1 -i ${../../python-modules/gyp/no-darwin-cflags.patch})
@@ -54,13 +56,20 @@ in stdenv.mkDerivation {
   propagatedBuildInputs = optionals stdenv.isDarwin [ Carbon ];
   setupHook = ./setup-hook.sh;
 
+  enableParallelBuilding = true;
+
+  postFixup = ''
+    pushd $out/lib/node_modules/npm/node_modules/node-gyp
+    patch -p2 < ${./no-xcode.patch}
+    popd
+  '';
+
   passthru.interpreterName = "nodejs-0.10";
 
   meta = {
     description = "Event-driven I/O framework for the V8 JavaScript engine";
     homepage = http://nodejs.org;
     license = licenses.mit;
-    maintainers = [ maintainers.goibhniu ];
     platforms = platforms.linux ++ platforms.darwin;
   };
 }

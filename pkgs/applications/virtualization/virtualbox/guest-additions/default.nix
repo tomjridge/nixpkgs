@@ -12,7 +12,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "http://download.virtualbox.org/virtualbox/${version}/VBoxGuestAdditions_${version}.iso";
-    sha256 = "7b61f523db7ba75aebc4c7bb0cae2da92674fa72299e4a006c5c67517f7d786b";
+    sha256 = "61a19c9ec4b449cbc6bb41b636b03a16bf5a47ffa4943423d262863017e8bc9b";
   };
 
   KERN_DIR = "${kernel.dev}/lib/modules/*/build";
@@ -75,7 +75,7 @@ stdenv.mkDerivation {
 
     for i in lib/VBoxOGL*.so
     do
-        patchelf --set-rpath $out/lib:${dbus}/lib $i
+        patchelf --set-rpath $out/lib:${dbus}/lib:${libXcomposite}/lib:${libXdamage}/lib:${libXext}/lib:${libXfixes}/lib $i
     done
 
     # FIXME: Virtualbox 4.3.22 moved VBoxClient-all (required by Guest Additions

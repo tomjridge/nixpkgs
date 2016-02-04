@@ -68,6 +68,11 @@ rec {
       patch = ./ubuntu-fan-4.patch;
     };
 
+  ubuntu_unprivileged_overlayfs =
+    { name = "ubuntu-unprivileged-overlayfs";
+      patch = ./ubuntu-unprivileged-overlayfs.patch;
+    };
+
   tuxonice_3_10 = makeTuxonicePatch {
     version = "2013-11-07";
     kernelVersion = "3.10.18";
@@ -82,10 +87,10 @@ rec {
     };
 
   grsecurity_unstable = grsecPatch
-    { kversion  = "4.1.6";
-      revision  = "201508181953";
+    { kversion  = "4.3.4";
+      revision  = "201601231215";
       branch    = "test";
-      sha256    = "1m227k1wb1q588vkgmngcz86k0wpzan6vra67pcx2478mabm3s89";
+      sha256    = "1dacld4zlp8mk6ykc0f1v5crppvq3znbdw9rwfrf6qi90984x0mr";
     };
 
   grsec_fix_path =
@@ -98,4 +103,29 @@ rec {
       patch = ./crc-regression.patch;
     };
 
+  genksyms_fix_segfault =
+    { name = "genksyms-fix-segfault";
+      patch = ./genksyms-fix-segfault.patch;
+    };
+
+
+  chromiumos_Kconfig_fix_entries_3_14 =
+    { name = "Kconfig_fix_entries_3_14";
+      patch = ./chromiumos-patches/fix-double-Kconfig-entry-3.14.patch;
+    };
+
+  chromiumos_Kconfig_fix_entries_3_18 =
+    { name = "Kconfig_fix_entries_3_18";
+      patch = ./chromiumos-patches/fix-double-Kconfig-entry-3.18.patch;
+    };
+
+  chromiumos_no_link_restrictions =
+    { name = "chromium-no-link-restrictions";
+      patch = ./chromiumos-patches/no-link-restrictions.patch;
+    };
+
+  chromiumos_mfd_fix_dependency =
+    { name = "mfd_fix_dependency";
+      patch = ./chromiumos-patches/mfd-fix-dependency.patch;
+    };
 }

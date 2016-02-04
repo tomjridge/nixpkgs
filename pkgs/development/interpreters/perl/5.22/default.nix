@@ -28,12 +28,14 @@ stdenv.mkDerivation rec {
     sha256 = "0g5bl8sdpzx9gx2g5jq3py4bj07z2ylk7s1qn0fvsss2yl3hhs8c";
   };
 
+  outputs = [ "out" "man" ];
+
   patches =
     [ # Do not look in /usr etc. for dependencies.
       ./no-sys-dirs.patch
     ]
     ++ optional stdenv.isSunOS ./ld-shared.patch
-    ++ stdenv.lib.optional stdenv.isDarwin [ ./cpp-precomp.patch ./no-libutil.patch ];
+    ++ stdenv.lib.optional stdenv.isDarwin [ ./cpp-precomp.patch ];
 
   # Build a thread-safe Perl with a dynamic libperls.o.  We need the
   # "installstyle" option to ensure that modules are put under
@@ -49,6 +51,7 @@ stdenv.mkDerivation rec {
       "-Dlocincpth=${libc}/include"
       "-Dloclibpth=${libc}/lib"
     ]
+    ++ optional stdenv.isSunOS "-Dcc=gcc"
     ++ optional enableThreading "-Dusethreads";
 
   configureScript = "${stdenv.shell} ./Configure";
@@ -57,9 +60,14 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
+  postPatch = ''
+    pwd="$(type -P pwd)"
+    substituteInPlace dist/PathTools/Cwd.pm \
+      --replace "pwd_cmd = 'pwd'" "pwd_cmd = '$pwd'"
+  '';
+
   preConfigure =
     ''
-
       configureFlags="$configureFlags -Dprefix=$out -Dman1dir=$out/share/man/man1 -Dman3dir=$out/share/man/man3"
 
       ${optionalString stdenv.isArm ''

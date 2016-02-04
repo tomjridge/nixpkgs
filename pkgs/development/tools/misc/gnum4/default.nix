@@ -1,4 +1,4 @@
-{stdenv, fetchurl}:
+{ stdenv, fetchurl }:
 
 stdenv.mkDerivation rec {
   name = "gnum4-1.4.17";
@@ -10,7 +10,10 @@ stdenv.mkDerivation rec {
 
   doCheck = !stdenv.isDarwin
     && !stdenv.isCygwin                    # XXX: `test-dup2' fails on Cygwin
-    && !stdenv.isSunOS;                    # XXX: `test-setlocale2.sh' fails
+    && !stdenv.isSunOS                     # XXX: `test-setlocale2.sh' fails
+    && !stdenv.isFreeBSD;                  # XXX: test 084 fails
+
+  configureFlags = "--with-syscmd-shell=${stdenv.shell}";
 
   # Upstream is aware of it; it may be in the next release.
   patches = [ ./s_isdir.patch ];

@@ -1,11 +1,11 @@
 { stdenv, fetchurl, intltool, glib, pkgconfig, polkit, python, sqlite }:
 
-let version = "1.0.7"; in
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   name = "packagekit-${version}";
+  version = "1.0.8";
 
   src = fetchurl {
-    sha256 = "0klwr0y3a72xpz6bwv4afbk3vvx5r1av5idhz3mx4p9ssnscb1mi";
+    sha256 = "1vaxn4kwdwx6p03n88k4pnbd2l6lb0cbxpcs88kjack1jml17c3l";
     url = "http://www.freedesktop.org/software/PackageKit/releases/PackageKit-${version}.tar.xz";
   };
 
@@ -13,33 +13,33 @@ stdenv.mkDerivation {
   propagatedBuildInputs = [ sqlite ];
   nativeBuildInputs = [ intltool pkgconfig ];
 
-  configureFlags = ''
-    --disable-static
-    --disable-python3
-    --disable-networkmanager
-    --disable-connman
-    --disable-systemd
-    --disable-bash-completion
-    --disable-browser-plugin
-    --disable-gstreamer-plugin
-    --disable-gtk-module
-    --disable-command-not-found
-    --disable-cron
-    --disable-daemon-tests
-    --disable-alpm
-    --disable-aptcc
-    --enable-dummy
-    --disable-entropy
-    --disable-hif
-    --disable-pisi
-    --disable-poldek
-    --disable-portage
-    --disable-ports
-    --disable-katja
-    --disable-urmpi
-    --disable-yum
-    --disable-zypp
-  '';
+  configureFlags = [
+    "--disable-static"
+    "--disable-python3"
+    "--disable-networkmanager"
+    "--disable-connman"
+    "--disable-systemd"
+    "--disable-bash-completion"
+    "--disable-browser-plugin"
+    "--disable-gstreamer-plugin"
+    "--disable-gtk-module"
+    "--disable-command-not-found"
+    "--disable-cron"
+    "--disable-daemon-tests"
+    "--disable-alpm"
+    "--disable-aptcc"
+    "--enable-dummy"
+    "--disable-entropy"
+    "--disable-hif"
+    "--disable-pisi"
+    "--disable-poldek"
+    "--disable-portage"
+    "--disable-ports"
+    "--disable-katja"
+    "--disable-urpmi"
+    "--disable-yum"
+    "--disable-zypp"
+  ];
 
   enableParallelBuilding = true;
 
@@ -53,7 +53,6 @@ stdenv.mkDerivation {
   '';
 
   meta = with stdenv.lib; {
-    inherit version;
     description = "System to facilitate installing and updating packages";
     longDescription = ''
       PackageKit is a system designed to make installing and updating software

@@ -1,15 +1,17 @@
-{ stdenv, fetchurl, geoip, geolite-legacy, getopt, openssl, perl }:
+{ stdenv, fetchurl, getopt, ip2location-c, openssl, perl
+, geoip ? null, geolite-legacy ? null
+, ip2location-database ? null }:
 
-let version = "0.99.0"; in
 stdenv.mkDerivation rec {
   name = "ipv6calc-${version}";
+  version = "0.99.1";
 
   src = fetchurl {
     url = "ftp://ftp.deepspace6.net/pub/ds6/sources/ipv6calc/${name}.tar.gz";
-    sha256 = "1dgx6gji9dyz77jssk2ax5r0ycq4jcsks71bhvcpb79k02wkaxgw";
+    sha256 = "0a0xpai14y969hp6l10r2wcd16sqf3v40fq5h97m4a69hcpmvg5h";
   };
 
-  buildInputs = [ geoip geolite-legacy getopt openssl ];
+  buildInputs = [ geoip geolite-legacy getopt ip2location-c openssl ];
   nativeBuildInputs = [ perl ];
 
   patchPhase = ''
@@ -30,12 +32,13 @@ stdenv.mkDerivation rec {
     "--enable-geoip"
   ] ++ stdenv.lib.optional (geolite-legacy != null) [
     "--with-geoip-db=${geolite-legacy}/share/GeoIP"
+  ] ++ stdenv.lib.optional (ip2location-c != null ) [
+    "--enable-ip2location"
   ];
 
   enableParallelBuilding = true;
 
   meta = with stdenv.lib; {
-    inherit version;
     description = "Calculate/manipulate (not only) IPv6 addresses";
     longDescription = ''
       ipv6calc is a small utility to manipulate (not only) IPv6 addresses and

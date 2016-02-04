@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, cmake, gst_all_1, phonon_qt5, pkgconfig, qt5, debug ? false }:
+{ stdenv, fetchurl, cmake, gst_all_1, phonon, pkgconfig, qtbase, debug ? false }:
 
 with stdenv.lib;
 
@@ -15,7 +15,12 @@ stdenv.mkDerivation rec {
     sha256 = "1q1ix6zsfnh6gfnpmwp67s376m7g7ahpjl1qp2fqakzb5cgzgq10";
   };
 
-  buildInputs = with gst_all_1; [ gstreamer gst-plugins-base phonon_qt5 qt5.base ];
+  buildInputs = with gst_all_1; [ gstreamer gst-plugins-base phonon qtbase ];
+
+  NIX_CFLAGS_COMPILE = [
+    # This flag should be picked up through pkgconfig, but it isn't.
+    "-I${gst_all_1.gstreamer}/lib/gstreamer-1.0/include"
+  ];
 
   nativeBuildInputs = [ cmake pkgconfig ];
 

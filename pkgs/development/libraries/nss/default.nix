@@ -11,11 +11,11 @@ let
 
 in stdenv.mkDerivation rec {
   name = "nss-${version}";
-  version = "3.20";
+  version = "3.21";
 
   src = fetchurl {
-    url = "http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/NSS_3_20_RTM/src/${name}.tar.gz";
-    sha256 = "5e38d4b9837ca338af966b97fc91c07f67ad647fb38dc4af3cfd0d84e477d15c";
+    url = "http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/NSS_3_21_RTM/src/${name}.tar.gz";
+    sha256 = "3f7a5b027d7cdd5c0e4ff7544da33fdc6f56c2f8c27fff02938fd4a6fbe87239";
   };
 
   buildInputs = [ nspr perl zlib sqlite ];
@@ -25,7 +25,7 @@ in stdenv.mkDerivation rec {
   '';
 
   patches =
-    [ ./nss-3.17-gentoo-fixups.patch
+    [ ./nss-3.21-gentoo-fixups.patch
       # Based on http://patch-tracker.debian.org/patch/series/dl/nss/2:3.15.4-1/85_security_load.patch
       ./85_security_load.patch
     ];
@@ -58,6 +58,8 @@ in stdenv.mkDerivation rec {
     "NSS_USE_SYSTEM_SQLITE=1"
   ] ++ stdenv.lib.optional stdenv.is64bit "USE_64=1";
 
+  NIX_CFLAGS_COMPILE = "-Wno-error";
+
   postInstall = ''
     rm -rf $out/private
     mv $out/public $out/include
@@ -82,5 +84,6 @@ in stdenv.mkDerivation rec {
   meta = {
     homepage = https://developer.mozilla.org/en-US/docs/NSS;
     description = "A set of libraries for development of security-enabled client and server applications";
+    platforms = stdenv.lib.platforms.all;
   };
 }

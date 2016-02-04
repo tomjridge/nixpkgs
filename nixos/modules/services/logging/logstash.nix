@@ -33,6 +33,7 @@ in
       package = mkOption {
         type = types.package;
         default = pkgs.logstash;
+        defaultText = "pkgs.logstash";
         example = literalExample "pkgs.logstash";
         description = "Logstash package to use.";
       };
@@ -87,7 +88,7 @@ in
         example = ''
           # Read from journal
           pipe {
-            command => "${pkgs.systemd}/bin/journalctl -f -o json"
+            command => "''${pkgs.systemd}/bin/journalctl -f -o json"
             type => "syslog" codec => json {}
           }
         '';
@@ -132,6 +133,7 @@ in
       description = "Logstash Daemon";
       wantedBy = [ "multi-user.target" ];
       environment = { JAVA_HOME = jre; };
+      path = [ pkgs.bash ];
       serviceConfig = {
         ExecStart =
           "${cfg.package}/bin/logstash agent " +

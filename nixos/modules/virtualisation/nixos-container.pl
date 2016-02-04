@@ -97,10 +97,10 @@ if ($action eq "create") {
     if ($ensureUniqueName) {
         my $base = $containerName;
         for (my $nr = 0; ; $nr++) {
-            $containerName = "$base-$nr";
             $confFile = "/etc/containers/$containerName.conf";
             $root = "/var/lib/containers/$containerName";
             last unless -e $confFile || -e $root;
+            $containerName = "$base-$nr";
         }
     }
 
@@ -290,7 +290,8 @@ elsif ($action eq "show-ip") {
 }
 
 elsif ($action eq "show-host-key") {
-    my $fn = "$root/etc/ssh/ssh_host_ecdsa_key.pub";
+    my $fn = "$root/etc/ssh/ssh_host_ed25519_key.pub";
+    $fn = "$root/etc/ssh/ssh_host_ecdsa_key.pub" unless -e $fn;
     exit 1 if ! -f $fn;
     print read_file($fn);
 }

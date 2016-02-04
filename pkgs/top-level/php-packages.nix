@@ -12,6 +12,13 @@ let self = with self; {
     sha256 = "1mhbz56mbnq7dryf2d64l84lj3fpr5ilmg2424glans3wcg772hp";
   };
 
+  imagick = buildPecl {
+    name = "imagick-3.1.2";
+    sha256 = "14vclf2pqcgf3w8nzqbdw0b9v30q898344c84jdbw2sa62n6k1sj";
+    configureFlags = "--with-imagick=${pkgs.imagemagick}";
+    buildInputs = [ pkgs.pkgconfig ];
+  };
+
   memcache = buildPecl {
     name = "memcache-3.0.8";
 
@@ -108,11 +115,11 @@ let self = with self; {
 
   composer = pkgs.stdenv.mkDerivation rec {
     name = "composer-${version}";
-    version = "1.0.0-alpha10";
+    version = "1.0.0-alpha11";
 
     src = pkgs.fetchurl {
       url = "https://getcomposer.org/download/${version}/composer.phar";
-      sha256 = "0a26zlsr2jffcqlz8z6l8s6c6nlyfj2gxqfgx76knx5wch1psb4z";
+      sha256 = "1b41ad352p4296c2j7cdq27wp06w28080bjxnjpmw536scb7yd27";
     };
 
     phases = [ "installPhase" ];
@@ -130,6 +137,33 @@ let self = with self; {
       license = licenses.mit;
       homepage = https://getcomposer.org/;
       maintainers = with maintainers; [ globin offline ];
+    };
+  };
+
+  phpcs = pkgs.stdenv.mkDerivation rec {
+    name = "phpcs-${version}";
+    version = "2.3.4";
+
+    src = pkgs.fetchurl {
+      url = "https://github.com/squizlabs/PHP_CodeSniffer/releases/download/${version}/phpcs.phar";
+      sha256 = "ce11e02fba30a35a80b691b05be20415eb8b5dea585a4e6646803342b86abb8c";
+    };
+
+    phases = [ "installPhase" ];
+    buildInputs = [ pkgs.makeWrapper ];
+
+    installPhase = ''
+      mkdir -p $out/bin
+      install -D $src $out/libexec/phpcs/phpcs.phar
+      makeWrapper ${php}/bin/php $out/bin/phpcs \
+        --add-flags "$out/libexec/phpcs/phpcs.phar"
+    '';
+
+    meta = with pkgs.lib; {
+      description = "PHP coding standard tool";
+      license = licenses.bsd3;
+      homepage = https://squizlabs.github.io/PHP_CodeSniffer/;
+      maintainers = with maintainers; [ javaguirre ];
     };
   };
 }; in self

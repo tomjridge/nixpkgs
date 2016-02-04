@@ -10,11 +10,6 @@
   brief = false;
 }
 {
-  name = "commons-codec-1.9-src.zip";
-  md5 = "048751f3271906db5126ab76870444c4";
-  brief = false;
-}
-{
   name = "commons-httpclient-3.1-src.tar.gz";
   md5 = "2c9b0f83ed5890af02c0df1c1776f39b";
   brief = false;
@@ -22,11 +17,6 @@
 {
   name = "commons-lang-2.4-src.tar.gz";
   md5 = "625ff5f2f968dd908bca43c9469d6e6b";
-  brief = false;
-}
-{
-  name = "commons-lang3-3.3.1-src.tar.gz";
-  md5 = "8ab049135b2d15313da5d9f0656894a1";
   brief = false;
 }
 {
@@ -90,8 +80,8 @@
   brief = true;
 }
 {
-  name = "ConvertTextToNumber-1.3.2.oxt";
-  md5 = "451ccf439a36a568653b024534669971";
+  name = "converttexttonumber-1-5-0.oxt";
+  md5 = "1f467e5bb703f12cbbb09d5cf67ecf4a";
   brief = false;
 }
 {
@@ -300,8 +290,8 @@
   brief = true;
 }
 {
-  name = "language-subtag-registry-2015-06-08.tar.bz2";
-  md5 = "d431bd8a70455be1fa8523fa633c005b";
+  name = "language-subtag-registry-2015-08-04.tar.bz2";
+  md5 = "bf5986dbfa1c9a0f26cf1b00ed369484";
   brief = true;
 }
 {
@@ -346,8 +336,8 @@
   brief = false;
 }
 {
-  name = "libxml2-2.9.1.tar.gz";
-  md5 = "9c0cfef285d5c4a5c80d00904ddab380";
+  name = "libxml2-2.9.3.tar.gz";
+  md5 = "daece17e045f1c107610e137ab50c179";
   brief = false;
 }
 {
@@ -396,8 +386,8 @@
   brief = false;
 }
 {
-  name = "nss-3.19.2-with-nspr-4.10.8.tar.gz";
-  md5 = "2100bc5a7ea9685928ff68cda2e60569";
+  name = "nss-3.19.4-with-nspr-4.10.10.tar.gz";
+  md5 = "478e0e90ebc4a90159549e77021021fd";
   brief = false;
 }
 {
@@ -436,8 +426,8 @@
   brief = false;
 }
 {
-  name = "libpng-1.5.18.tar.gz";
-  md5 = "5266905cef49d1224437465ad4d67fd9";
+  name = "libpng-1.5.24.tar.gz";
+  md5 = "6652e428d1d3fc3c6cb1362159b1cf3b";
   brief = true;
 }
 {

@@ -3,7 +3,7 @@
 with stdenv.lib;
 
 let
-  version = "28-07-2015";
+  version = "2016-01-26";
   rpath = makeLibraryPath [ "$out/lib" "$out/bin" ];
   platform = with stdenv;
     if isx86_64 then "64bit"
@@ -15,7 +15,7 @@ in
   stdenv.mkDerivation {
     src = fetchurl {
       url = "http://www.sundtek.de/media/netinst/${platform}/installer.tar.gz";
-      sha256 = "1gpz42rwxm76fzq6088gjzbfl82mhapc34c0ms7vphrhra6yw19h";
+      sha256 = "15y6r5w306pcq4g1rn9f7vf70f3a7qhq237ngaf0wxh2nr0aamxp";
     };
     name = "sundtek-${version}";
 
@@ -37,6 +37,8 @@ in
         patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" {} \
         patchelf --set-rpath ${rpath} {} \;
     '';
+
+    preferLocalBuild = true;
 
     meta = {
       description = "Sundtek MediaTV driver";

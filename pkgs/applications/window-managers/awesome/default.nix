@@ -1,5 +1,5 @@
 { stdenv, fetchurl, luaPackages, cairo, cmake, imagemagick, pkgconfig, gdk_pixbuf
-, xlibs, libstartup_notification, libxdg_basedir, libpthreadstubs
+, xorg, libstartup_notification, libxdg_basedir, libpthreadstubs
 , xcb-util-cursor, makeWrapper, pango, gobjectIntrospection, unclutter
 , compton, procps, iproute, coreutils, curl, alsaUtils, findutils, xterm
 , which, dbus, nettools, git, asciidoc, doxygen
@@ -7,7 +7,7 @@
 }:
 
 let
-  version = "3.5.6";
+  version = "3.5.8";
 in with luaPackages;
 
 stdenv.mkDerivation rec {
@@ -15,7 +15,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url    = "http://awesome.naquadah.org/download/awesome-${version}.tar.xz";
-    sha256 = "1ms6a3l1i2jdhzrd1zr25cqckznmb44qgz4n635jam42hzhrvx1p";
+    sha256 = "1iifcyphgibmh3cvsy8agjrl9zjl80scrg0bcgnwywmxaxncjc3w";
   };
 
   meta = with stdenv.lib; {
@@ -46,15 +46,15 @@ stdenv.mkDerivation rec {
     pango
     pkgconfig
     xcb-util-cursor
-    xlibs.libXau
-    xlibs.libXdmcp
-    xlibs.libxcb
-    xlibs.libxshmfence
-    xlibs.xcbutil
-    xlibs.xcbutilimage
-    xlibs.xcbutilkeysyms
-    xlibs.xcbutilrenderutil
-    xlibs.xcbutilwm
+    xorg.libXau
+    xorg.libXdmcp
+    xorg.libxcb
+    xorg.libxshmfence
+    xorg.xcbutil
+    xorg.xcbutilimage
+    xorg.xcbutilkeysyms
+    xorg.xcbutilrenderutil
+    xorg.xcbutilwm
     #xmlto docbook_xml_dtd_45 docbook_xsl
   ];
 

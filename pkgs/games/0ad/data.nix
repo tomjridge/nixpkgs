@@ -5,7 +5,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "http://releases.wildfiregames.com/0ad-${version}-${releaseType}-unix-data.tar.xz";
-    sha256 = "6bf2234ef5043b14a3bbeda013fefed73ce2e564262f5e03b0801bfe671331d0";
+    sha256 = "0f406ynz2fbg3hwavh52xh4f7kqm4mzhz59kkvb6dpsax5agalwk";
   };
 
   patchPhase = ''

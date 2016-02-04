@@ -1,9 +1,9 @@
 { stdenv, fetchurl, pkgconfig, zlib, libjpeg, libpng, libtiff, pam
-, dbus, acl, gmp, xdg_utils
+, dbus, acl, gmp, darwin
 , libusb ? null, gnutls ? null, avahi ? null, libpaper ? null
 }:
 
-let version = "2.0.3"; in
+let version = "2.0.4"; in
 
 with stdenv.lib;
 stdenv.mkDerivation {
@@ -13,11 +13,14 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://www.cups.org/software/${version}/cups-${version}-source.tar.bz2";
-    sha256 = "10c84ppc9prx6gcyskmm6fh0rks346yryzd356gkg9whhq26fcdw";
+    sha256 = "1gaakz24k6x5nc09rmpiq0xq20j1qdjc3szag8qwmyi4ky6ydmg1";
   };
 
-  buildInputs = [ pkgconfig zlib libjpeg libpng libtiff libusb gnutls avahi libpaper ]
-    ++ optionals stdenv.isLinux [ pam dbus.libs acl xdg_utils ] ;
+  buildInputs = [ pkgconfig zlib libjpeg libpng libtiff libusb gnutls libpaper ]
+    ++ optionals stdenv.isLinux [ avahi pam dbus.libs acl ]
+    ++ optionals stdenv.isDarwin (with darwin; [
+      configd apple_sdk.frameworks.ApplicationServices
+    ]);
 
   propagatedBuildInputs = [ gmp ];
 
@@ -33,7 +36,11 @@ stdenv.mkDerivation {
   ] ++ optional (libusb != null) "--enable-libusb"
     ++ optional (gnutls != null) "--enable-ssl"
     ++ optional (avahi != null) "--enable-avahi"
-    ++ optional (libpaper != null) "--enable-libpaper";
+    ++ optional (libpaper != null) "--enable-libpaper"
+    ++ optionals stdenv.isDarwin [
+    "--with-bundledir=$out"
+    "--disable-launchd"
+  ];
 
   installFlags =
     [ # Don't try to write in /var at build time.
@@ -54,8 +61,7 @@ stdenv.mkDerivation {
       "CUPS_PRIMARY_SYSTEM_GROUP=root"
     ];
 
-  postInstall =
-    ''
+  postInstall = ''
       # Delete obsolete stuff that conflicts with cups-filters.
       rm -rf $out/share/cups/banners $out/share/cups/data/testprint
 
@@ -71,6 +77,10 @@ stdenv.mkDerivation {
           mv "$f" "''${f/org\.cups\./}"
         fi
       done
+    '' + optionalString stdenv.isLinux ''
+      # Use xdg-open when on Linux
+      substituteInPlace $out/share/applications/cups.desktop \
+        --replace "Exec=htmlview" "Exec=xdg-open"
     '';
 
   meta = {

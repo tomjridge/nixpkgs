@@ -1,27 +1,27 @@
-{ stdenv, fetchurl, libtool, xlibs, freetype, fontconfig, openssl, glib
+{ stdenv, fetchurl, libtool, xorg, freetype, fontconfig, openssl, glib
 , mesa, gstreamer, gst_plugins_base, dbus, alsaLib, zlib, libuuid
 , libxml2, libxslt, sqlite, libogg, libvorbis, xz, libcanberra
 , makeWrapper, libredirect, xkeyboard_config, xcbutilkeysyms }:
 
 let
 
-  version = "2.2.1373";
+  version = "2.2.1388";
 
   rpath = stdenv.lib.makeSearchPath "lib" [
     stdenv.glibc
     libtool
-    xlibs.libXext
-    xlibs.libSM
-    xlibs.libICE
-    xlibs.libX11
-    xlibs.libXft
-    xlibs.libXau
-    xlibs.libXdmcp
-    xlibs.libXrender
-    xlibs.libXfixes
-    xlibs.libXcomposite
-    xlibs.libxcb
-    xlibs.libXi
+    xorg.libXext
+    xorg.libSM
+    xorg.libICE
+    xorg.libX11
+    xorg.libXft
+    xorg.libXau
+    xorg.libXdmcp
+    xorg.libXrender
+    xorg.libXfixes
+    xorg.libXcomposite
+    xorg.libxcb
+    xorg.libXi
     freetype
     fontconfig
     openssl
@@ -47,12 +47,12 @@ let
     if stdenv.system == "x86_64-linux" then
       fetchurl {
         url = "http://downloads.hipchat.com/linux/arch/x86_64/hipchat-${version}-x86_64.pkg.tar.xz";
-        sha256 = "0mxjzigncp8sh5w2rpr7kvkiahagm3adss1zv6rqk8hc1awrnd8n";
+        sha256 = "18vl0c7xgyzd2miwkfzc638z0wzszgsdlbnslkkvxmg95ykdrdnz";
       }
     else if stdenv.system == "i686-linux" then
       fetchurl {
         url = "http://downloads.hipchat.com/linux/arch/i686/hipchat-${version}-i686.pkg.tar.xz";
-        sha256 = "1f4cjbazgifxpyr6589frs417h4wpxbykf46w5qiw0m2wiqpqff5";
+        sha256 = "12q8hf3gmcgrqg6v9xqyknwsmwywpwm76jc54sfniiqv5ngq24hl";
       }
     else
       throw "HipChat is not supported on ${stdenv.system}";

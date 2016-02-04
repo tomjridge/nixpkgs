@@ -1,4 +1,4 @@
-{ pkgs, options, version, revision }:
+{ pkgs, options, version, revision, extraSources ? [] }:
 
 with pkgs;
 with pkgs.lib;
@@ -17,24 +17,23 @@ let
 
   # Clean up declaration sites to not refer to the NixOS source tree.
   optionsList' = flip map optionsList (opt: opt // {
-    declarations = map (fn: stripPrefix fn) opt.declarations;
+    declarations = map stripAnyPrefixes opt.declarations;
   }
   // optionalAttrs (opt ? example) { example = substFunction opt.example; }
   // optionalAttrs (opt ? default) { default = substFunction opt.default; }
   // optionalAttrs (opt ? type) { type = substFunction opt.type; });
 
-  prefix = toString ../../..;
+  # We need to strip references to /nix/store/* from options,
+  # including any `extraSources` if some modules came from elsewhere,
+  # or else the build will fail.
+  #
+  # E.g. if some `options` came from modules in ${pkgs.customModules}/nix,
+  # you'd need to include `extraSources = [ pkgs.customModules ]`
+  prefixesToStrip = map (p: "${toString p}/") ([ ../../.. ] ++ extraSources);
+  stripAnyPrefixes = flip (fold removePrefix) prefixesToStrip;
 
-  stripPrefix = fn:
-    if substring 0 (stringLength prefix) fn == prefix then
-      substring (stringLength prefix + 1) 1000 fn
-    else
-      fn;
-
-  # Convert the list of options into an XML file.  The builtin
-  # unsafeDiscardStringContext is used to prevent the realisation of
-  # the store paths which are used in options definitions.
-  optionsXML = builtins.toFile "options.xml" (builtins.unsafeDiscardStringContext (builtins.toXML optionsList'));
+  # Convert the list of options into an XML file.
+  optionsXML = builtins.toFile "options.xml" (builtins.toXML optionsList');
 
   optionsDocBook = runCommand "options-db.xml" {} ''
     optionsXML=${optionsXML}
@@ -57,6 +56,8 @@ let
       cp -prd $sources/* . # */
       chmod -R u+w .
       cp ${../../modules/services/databases/postgresql.xml} configuration/postgresql.xml
+      cp ${../../modules/security/acme.xml} configuration/acme.xml
+      cp ${../../modules/misc/nixos.xml} configuration/nixos.xml
       ln -s ${optionsDocBook} options-db.xml
       echo "${version}" > version
     '';
@@ -139,6 +140,8 @@ in rec {
     ''; # */
 
     meta.description = "The NixOS manual in HTML format";
+
+    allowedReferences = ["out"];
   };
 
   manualPDF = stdenv.mkDerivation {
@@ -146,12 +149,9 @@ in rec {
 
     inherit sources;
 
-    buildInputs = [ libxml2 libxslt dblatex tetex ];
+    buildInputs = [ libxml2 libxslt dblatex dblatex.tex ];
 
     buildCommand = ''
-      # TeX needs a writable font cache.
-      export VARTEXFONTS=$TMPDIR/texfonts
-
       ${copySources}
 
       dst=$out/share/doc/nixos
@@ -162,7 +162,7 @@ in rec {
 
       mkdir -p $out/nix-support
       echo "doc-pdf manual $dst/manual.pdf" >> $out/nix-support/hydra-build-products
-    ''; # */
+    '';
   };
 
   # Generate the NixOS manpages.
@@ -190,6 +190,8 @@ in rec {
         ${docbook5_xsl}/xml/xsl/docbook/manpages/docbook.xsl \
         ./man-pages.xml
     '';
+
+    allowedReferences = ["out"];
   };
 
 }

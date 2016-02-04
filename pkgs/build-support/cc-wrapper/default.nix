@@ -9,7 +9,7 @@
 , cc ? null, libc ? null, binutils ? null, coreutils ? null, shell ? stdenv.shell
 , zlib ? null, extraPackages ? [], extraBuildCommands ? ""
 , dyld ? null # TODO: should this be a setup-hook on dyld?
-, isGNU ? false, isClang ? false
+, isGNU ? false, isClang ? cc.isClang or false
 }:
 
 with stdenv.lib;
@@ -145,7 +145,7 @@ stdenv.mkDerivation {
     + optionalString (stdenv.isSunOS && nativePrefix != "") ''
       # Solaris needs an additional ld wrapper.
       ldPath="${nativePrefix}/bin"
-      ld="$out/bin/ld-solaris"
+      exec="$ldPath/ld"
       wrap ld-solaris ${./ld-solaris-wrapper.sh}
     '')
 
@@ -244,7 +244,7 @@ stdenv.mkDerivation {
        if stdenv.isArm then "ld-linux*.so.3" else
        if stdenv.system == "powerpc-linux" then "ld.so.1" else
        if stdenv.system == "mips64el-linux" then "ld.so.1" else
-       if stdenv.system == "x86_64-darwin" then "${dyld}/lib/dyld" else
+       if stdenv.system == "x86_64-darwin" then "/usr/lib/dyld" else
        abort "Don't know the name of the dynamic linker for this platform.")
     else "";
 

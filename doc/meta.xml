@@ -33,7 +33,7 @@ the package.  The value of a meta-attribute must be a string.</para>
 command-line using <command>nix-env</command>:
 
 <screen>
-$ nix-env -qa hello --meta --json
+$ nix-env -qa hello --json
 {
     "hello": {
         "meta": {
@@ -61,7 +61,7 @@ $ nix-env -qa hello --meta --json
                 "i686-openbsd",
                 "x86_64-openbsd"
             ],
-            "position": "/home/user/dev/nixpkgs/pkgs/applications/misc/hello/ex-2/default.nix:14"
+            "position": "/home/user/dev/nixpkgs/pkgs/applications/misc/hello/default.nix:14"
         },
         "name": "hello-2.9",
         "system": "x86_64-linux"
@@ -110,11 +110,6 @@ meta-attributes</title>
     <term><varname>longDescription</varname></term>
     <listitem><para>An arbitrarily long description of the
     package.</para></listitem>
-  </varlistentry>
-
-  <varlistentry>
-    <term><varname>version</varname></term>
-    <listitem><para>Package version.</para></listitem>
   </varlistentry>
 
   <varlistentry>

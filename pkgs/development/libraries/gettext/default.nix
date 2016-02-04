@@ -1,12 +1,14 @@
 { stdenv, fetchurl, libiconv, xz }:
 
 stdenv.mkDerivation (rec {
-  name = "gettext-0.19.5.1";
+  name = "gettext-0.19.6";
 
   src = fetchurl {
     url = "mirror://gnu/gettext/${name}.tar.gz";
-    sha256 = "0cbp498ckjwj7qr8b9pmkry8hkhldgkvg5yix8hi9c8z1hxxb651";
+    sha256 = "0pb9vp4ifymvdmc31ks3xxcnfqgzj8shll39czmk8c1splclqjzd";
   };
+
+  outputs = [ "out" "doc" ];
 
   LDFLAGS = if stdenv.isSunOS then "-lm -lmd -lmp -luutil -lnvpair -lnsl -lidmap -lavl -lsec" else "";
 
@@ -25,6 +27,12 @@ stdenv.mkDerivation (rec {
         "gt_cv_func_CFPreferencesCopyAppValue=no"
         "gt_cv_func_CFLocaleCopyCurrent=no"
       ]);
+
+  patchPhase = ''
+   substituteInPlace gettext-tools/projects/KDE/trigger --replace "/bin/pwd" pwd
+   substituteInPlace gettext-tools/projects/GNOME/trigger --replace "/bin/pwd" pwd
+   substituteInPlace gettext-tools/src/project-id --replace "/bin/pwd" pwd
+  '';
 
   # On cross building, gettext supposes that the wchar.h from libc
   # does not fulfill gettext needs, so it tries to work with its
@@ -88,8 +96,8 @@ stdenv.mkDerivation (rec {
    # Make sure `error.c' gets compiled and is part of `libgettextlib.la'.
    # This fixes:
    # gettext-0.18.1.1/gettext-tools/src/msgcmp.c:371: undefined reference to `_error_message_count'
-
-   '' sed -i gettext-tools/gnulib-lib/Makefile.in \
+  '' 
+   sed -i gettext-tools/gnulib-lib/Makefile.in \
           -e 's/am_libgettextlib_la_OBJECTS =/am_libgettextlib_la_OBJECTS = error.lo/g'
    '';
 })

@@ -1,17 +1,20 @@
 { stdenv, fetchurl, erlang, rebar, makeWrapper, coreutils, curl, bash }:
 
-let
-  version = "1.0.5";
-in
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   name = "elixir-${version}";
+  version = "1.2.2";
 
   src = fetchurl {
     url = "https://github.com/elixir-lang/elixir/archive/v${version}.tar.gz";
-    sha256 = "1f419pzlcgqx68rygwwyp2hzh4vgp0avjydd84dpa7finckc5raw";
+    sha256 = "0ml0sl1l5ibb8qh505fsd7y87wq9qjvaxw9y1dyfcw00d3i1z989";
   };
 
   buildInputs = [ erlang rebar makeWrapper ];
+
+  # Elixir expects that UTF-8 locale to be set (see https://github.com/elixir-lang/elixir/issues/3548).
+  # In other cases there is warnings during compilation.
+  LANG = "en_US.UTF-8";
+  LC_TYPE = "en_US.UTF-8";
 
   preBuild = ''
     # The build process uses ./rebar. Link it to the nixpkgs rebar
@@ -20,8 +23,6 @@ stdenv.mkDerivation {
 
     substituteInPlace Makefile \
       --replace "/usr/local" $out
-    substituteInPlace bin/mix \
-      --replace "/usr/bin/env elixir" "$out/bin/elixir"
   '';
 
   postFixup = ''
@@ -35,6 +36,9 @@ stdenv.mkDerivation {
         --prefix PATH ":" "${erlang}/bin:${coreutils}/bin:${curl}/bin:${bash}/bin" \
         --set CURL_CA_BUNDLE /etc/ssl/certs/ca-certificates.crt
     done
+
+    substituteInPlace $out/bin/mix \
+          --replace "/usr/bin/env elixir" "${coreutils}/bin/env elixir"
   '';
 
   meta = with stdenv.lib; {
@@ -51,6 +55,6 @@ stdenv.mkDerivation {
 
     license = licenses.epl10;
     platforms = platforms.unix;
-    maintainers = [ maintainers.the-kenny ];
+    maintainers = with maintainers; [ the-kenny havvy couchemar ];
   };
 }

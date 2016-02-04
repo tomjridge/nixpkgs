@@ -1,32 +1,36 @@
-{ stdenv, fetchurl, fetchFromGitHub, autoreconfHook, docbook_xsl, gtk_doc
-, icu, libxslt, pkgconfig }:
+{ stdenv, fetchFromGitHub, autoreconfHook, docbook_xsl, gtk_doc, icu
+, libxslt, pkgconfig, python }:
 
 let
 
-  version = "${libVersion}-list-${listVersion}";
-
-  listVersion = "2015-08-07";
-  listArchive = let
-    rev = "de9af76664aa5fd89dfee3c44c56ba91c03eefab";
-  in fetchurl {
-    sha256 = "007yxs92dffgapkqik6rfrng5af8hjzf8wd7hlff91q836k40abi";
-    url = "https://codeload.github.com/publicsuffix/list/tar.gz/${rev}";
+  listVersion = "2016-01-15";
+  listSources = fetchFromGitHub {
+    sha256 = "1smn4fl0fhldy7gdn0k1diyghbxdxnr4cj921bjdl2i4wxas41g5";
+    rev = "77cb90dce70827bda40384e1ae8bff3c958daef3";
+    repo = "list";
+    owner = "publicsuffix";
   };
 
-  libVersion = "0.8.0";
+  libVersion = "0.12.0";
 
-in stdenv.mkDerivation {
+in stdenv.mkDerivation rec {
   name = "libpsl-${version}";
+  version = "${libVersion}-list-${listVersion}";
 
   src = fetchFromGitHub {
-    sha256 = "0mjnj36igk6w3c0d4k2fqqg1kl6bpnxfrcgcgz1zdw33gfa5gdi7";
+    sha256 = "13w3lc752az2swymg408f3w2lbqs0f2h5ri6d5jw1vv9z0ij9xlw";
     rev = "libpsl-${libVersion}";
     repo = "libpsl";
     owner = "rockdaboot";
   };
 
   buildInputs = [ icu libxslt ];
-  nativeBuildInputs = [ autoreconfHook docbook_xsl gtk_doc pkgconfig ];
+  nativeBuildInputs = [ autoreconfHook docbook_xsl gtk_doc pkgconfig python ];
+
+  postPatch = ''
+    substituteInPlace src/psl.c --replace bits/stat.h sys/stat.h
+    patchShebangs src/make_dafsa.py
+  '';
 
   preAutoreconf = ''
     mkdir m4
@@ -35,16 +39,20 @@ in stdenv.mkDerivation {
 
   preConfigure = ''
     # The libpsl check phase requires the list's test scripts (tests/) as well
-    tar --directory=list --strip-components=1 -xf "${listArchive}"
+    cp -Rv "${listSources}"/* list
   '';
-  configureFlags = "--disable-static --enable-gtk-doc --enable-man";
+  configureFlags = [
+    "--disable-builtin"
+    "--disable-static"
+    "--enable-gtk-doc"
+    "--enable-man"
+  ];
 
   enableParallelBuilding = true;
 
   doCheck = true;
 
   meta = with stdenv.lib; {
-    inherit version;
     description = "C library for the Publix Suffix List";
     longDescription = ''
       libpsl is a C library for the Publix Suffix List (PSL). A "public suffix"

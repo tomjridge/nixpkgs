@@ -1,7 +1,7 @@
-/* moving all git tools into one attribute set because git is unlikely to be
- * referenced by other packages and you can get a fast overview.
-*/
-args: with args; with pkgs;
+/* All git-relates tools live here, in a separate attribute set so that users
+ * can get a fast overview over what's available.
+ */
+args @ {pkgs}: with args; with pkgs;
 let
   inherit (pkgs) stdenv fetchgit fetchurl subversion;
 
@@ -26,11 +26,7 @@ in
 rec {
 
   # support for bugzilla
-  gitBz = import ./git-bz {
-    inherit fetchgit stdenv makeWrapper python asciidoc xmlto # docbook2x docbook_xsl docbook_xml_dtd_45 libxslt
-      ;
-    inherit (pythonPackages) pysqlite;
-  };
+  git-bz = callPackage ./git-bz { };
 
   git = appendToName "minimal" gitBase;
 
@@ -46,18 +42,20 @@ rec {
     sendEmailSupport = !stdenv.isDarwin;
   };
 
-  inherit (pkgs.haskellPackages) git-annex;
+  git-annex = pkgs.haskellPackages.git-annex-with-assistant;
   gitAnnex = git-annex;
+
+  git-annex-remote-b2 = pkgs.goPackages.git-annex-remote-b2;
 
   qgit = import ./qgit {
     inherit fetchurl stdenv;
-    inherit (xlibs) libXext libX11;
+    inherit (xorg) libXext libX11;
     qt = qt4;
   };
 
   qgitGit = import ./qgit/qgit-git.nix {
     inherit fetchurl sourceFromHead stdenv;
-    inherit (xlibs) libXext libX11;
+    inherit (xorg) libXext libX11;
     qt = qt4;
   };
 
@@ -70,6 +68,8 @@ rec {
   };
 
   tig = callPackage ./tig { };
+
+  transcrypt = callPackage ./transcrypt { };
 
   hub = import ./hub {
     inherit go;
@@ -92,9 +92,13 @@ rec {
 
   svn2git_kde = callPackage ./svn2git-kde { };
 
+  subgit = callPackage ./subgit { };
+
   darcsToGit = callPackage ./darcs-to-git { };
 
   gitflow = callPackage ./gitflow { };
+
+  git-radar = callPackage ./git-radar { };
 
   git-remote-hg = callPackage ./git-remote-hg { };
 

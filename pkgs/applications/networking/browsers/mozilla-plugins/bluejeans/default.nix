@@ -1,5 +1,5 @@
 { stdenv, fetchurl, xorg, gtk, glib, gdk_pixbuf, dpkg, libXext, libXfixes
-, libXrender, libuuid, libXrandr, libXcomposite
+, libXrender, libuuid, libXrandr, libXcomposite, libpulseaudio
 }:
 
 with stdenv.lib;
@@ -10,18 +10,18 @@ let
     [gtk glib stdenv.cc.cc];
 
   rpathPlugin = makeLibraryPath
-    [ stdenv.cc.cc gtk glib xorg.libX11 gdk_pixbuf libXext libXfixes libXrender libXrandr libuuid libXcomposite ];
+    ([ stdenv.cc.cc gtk glib xorg.libX11 gdk_pixbuf libXext libXfixes libXrender libXrandr libXcomposite libpulseaudio ] ++ optional (libuuid != null) libuuid);
 
 in
 
 stdenv.mkDerivation rec {
   name = "bluejeans-${version}";
 
-  version = "2.100.102.8";
+  version = "2.125.24.5";
 
   src = fetchurl {
     url = "https://swdl.bluejeans.com/skinny/bjnplugin_${version}-1_amd64.deb";
-    sha256 = "18f8jmhxvqy1yiiwlsssj7rjlfcb41xn16hnl6wv8r8r2mmic4v8";
+    sha256 = "0lxxd7icfqcpg5rb4njkk4ybxmisv4c509yisznxspi49qfxirwq";
   };
 
   phases = [ "unpackPhase" "installPhase" "fixupPhase" ];
@@ -52,5 +52,6 @@ stdenv.mkDerivation rec {
     homepage = http://bluejeans.com;
     license = stdenv.lib.licenses.unfree;
     maintainers = with maintainers; [ ocharles kamilchm ];
+    platforms = stdenv.lib.platforms.linux;
   };
 }

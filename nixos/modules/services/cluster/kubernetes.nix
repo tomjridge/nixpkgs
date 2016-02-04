@@ -73,7 +73,7 @@ in {
       };
 
       port = mkOption {
-        description = "Kubernets apiserver listening port.";
+        description = "Kubernetes apiserver listening port.";
         default = 8080;
         type = types.int;
       };
@@ -105,7 +105,7 @@ in {
       tokenAuth = mkOption {
         description = ''
           Kubernetes apiserver token authentication file. See
-          <link xlink:href="https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/authentication.md"/>
+          <link xlink:href="http://kubernetes.io/v1.0/docs/admin/authentication.html"/>
         '';
         default = {};
         example = literalExample ''
@@ -120,7 +120,7 @@ in {
       authorizationMode = mkOption {
         description = ''
           Kubernetes apiserver authorization mode (AlwaysAllow/AlwaysDeny/ABAC). See
-          <link xlink:href="https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/authorization.md"/>
+          <link xlink:href="http://kubernetes.io/v1.0/docs/admin/authorization.html"/>
         '';
         default = "AlwaysAllow";
         type = types.enum ["AlwaysAllow" "AlwaysDeny" "ABAC"];
@@ -129,7 +129,7 @@ in {
       authorizationPolicy = mkOption {
         description = ''
           Kubernetes apiserver authorization policy file. See
-          <link xlink:href="https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/authorization.md"/>
+          <link xlink:href="http://kubernetes.io/v1.0/docs/admin/authorization.html"/>
         '';
         default = [];
         example = literalExample ''
@@ -159,16 +159,35 @@ in {
       };
 
       runtimeConfig = mkOption {
-        description = "Api runtime configuration";
+        description = ''
+          Api runtime configuration. See
+          <link xlink:href="http://kubernetes.io/v1.0/docs/admin/cluster-management.html"/>
+        '';
         default = "";
         example = "api/all=false,api/v1=true";
         type = types.str;
       };
 
       admissionControl = mkOption {
-        description = "Kubernetes admission control plugins to use.";
+        description = ''
+          Kubernetes admission control plugins to use. See
+          <link xlink:href="http://kubernetes.io/v1.0/docs/admin/admission-controllers.html"/>
+        '';
         default = ["AlwaysAdmit"];
+        example = [
+          "NamespaceLifecycle" "NamespaceExists" "LimitRanger"
+          "SecurityContextDeny" "ServiceAccount" "ResourceQuota"
+        ];
         type = types.listOf types.str;
+      };
+
+      serviceAccountKey = mkOption {
+        description = ''
+          Kubernetes apiserver PEM-encoded x509 RSA private or public key file,
+          used to verify ServiceAccount tokens.
+        '';
+        default = null;
+        type = types.nullOr types.path;
       };
 
       extraOpts = mkOption {
@@ -192,7 +211,7 @@ in {
       };
 
       port = mkOption {
-        description = "Kubernets scheduler listening port.";
+        description = "Kubernetes scheduler listening port.";
         default = 10251;
         type = types.int;
       };
@@ -224,7 +243,7 @@ in {
       };
 
       port = mkOption {
-        description = "Kubernets controller manager listening port.";
+        description = "Kubernetes controller manager listening port.";
         default = 10252;
         type = types.int;
       };
@@ -235,8 +254,26 @@ in {
         type = types.str;
       };
 
+      serviceAccountPrivateKey = mkOption {
+        description = ''
+          Kubernetes controller manager PEM-encoded private RSA key file used to
+          sign service account tokens
+        '';
+        default = null;
+        type = types.nullOr types.path;
+      };
+
+      rootCaFile = mkOption {
+        description = ''
+          Kubernetes controller manager certificate authority file included in
+          service account's token secret.
+        '';
+        default = null;
+        type = types.nullOr types.path;
+      };
+
       extraOpts = mkOption {
-        description = "Kubernetes controller extra command line options.";
+        description = "Kubernetes controller manager extra command line options.";
         default = "";
         type = types.str;
       };
@@ -262,7 +299,7 @@ in {
       };
 
       port = mkOption {
-        description = "Kubernets kubelet info server listening port.";
+        description = "Kubernetes kubelet info server listening port.";
         default = 10250;
         type = types.int;
       };
@@ -294,7 +331,10 @@ in {
       };
 
       apiServers = mkOption {
-        description = "Kubernetes kubelet list of Kubernetes API servers for publishing events, and reading pods and services.";
+        description = ''
+          Kubernetes kubelet list of Kubernetes API servers for publishing events,
+          and reading pods and services.
+        '';
         default = ["${cfg.apiserver.address}:${toString cfg.apiserver.port}"];
         type = types.listOf types.str;
       };
@@ -413,17 +453,14 @@ in {
             ${optionalString (cfg.apiserver.runtimeConfig!="")
               "--runtime-config=${cfg.apiserver.runtimeConfig}"} \
             --admission_control=${concatStringsSep "," cfg.apiserver.admissionControl} \
+            ${optionalString (cfg.apiserver.serviceAccountKey!=null)
+              "--service-account-key-file=${cfg.apiserver.serviceAccountKey}"} \
             --logtostderr=true \
             ${optionalString cfg.verbose "--v=6 --log-flush-frequency=1s"} \
             ${cfg.apiserver.extraOpts}
           '';
           User = "kubernetes";
         };
-        postStart = ''
-          until ${pkgs.curl}/bin/curl -s -o /dev/null 'http://${cfg.apiserver.address}:${toString cfg.apiserver.port}/'; do
-            sleep 1;
-          done
-        '';
       };
     })
 
@@ -456,6 +493,10 @@ in {
             --address=${cfg.controllerManager.address} \
             --port=${toString cfg.controllerManager.port} \
             --master=${cfg.controllerManager.master} \
+            ${optionalString (cfg.controllerManager.serviceAccountPrivateKey!=null)
+              "--service-account-private-key-file=${cfg.controllerManager.serviceAccountPrivateKey}"} \
+            ${optionalString (cfg.controllerManager.rootCaFile!=null)
+              "--root-ca-file=${cfg.controllerManager.rootCaFile}"} \
             --logtostderr=true \
             ${optionalString cfg.verbose "--v=6 --log-flush-frequency=1s"} \
             ${cfg.controllerManager.extraOpts}
@@ -471,6 +512,7 @@ in {
         wantedBy = [ "multi-user.target" ];
         requires = ["kubernetes-setup.service"];
         after = [ "network-interfaces.target" "etcd.service" "docker.service" ];
+        path = [ pkgs.gitMinimal pkgs.openssh ];
         script = ''
           export PATH="/bin:/sbin:/usr/bin:/usr/sbin:$PATH"
           exec ${cfg.package}/bin/kubelet \
@@ -509,6 +551,8 @@ in {
             ${optionalString cfg.verbose "--v=6 --log-flush-frequency=1s"} \
             ${cfg.proxy.extraOpts}
           '';
+          Restart = "always"; # Retry connection
+          RestartSec = "5s";
         };
       };
     })

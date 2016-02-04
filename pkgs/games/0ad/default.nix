@@ -1,7 +1,7 @@
 { stdenv, callPackage, fetchurl, python27
-, pkgconfig, spidermonkey_24, boost, icu, libxml2, libpng
+, pkgconfig, spidermonkey_31, boost, icu, libxml2, libpng
 , libjpeg, zlib, curl, libogg, libvorbis, enet, miniupnpc
-, openal, mesa, xproto, libX11, libXcursor, nspr, SDL
+, openal, mesa, xproto, libX11, libXcursor, nspr, SDL, SDL2
 , gloox, nvidia-texture-tools
 , withEditor ? true, wxGTK ? null
 }:
@@ -9,7 +9,7 @@
 assert withEditor -> wxGTK != null;
 
 let
-  version = "0.0.17";
+  version = "0.0.19";
 
   releaseType = "alpha";
 
@@ -25,21 +25,27 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "http://releases.wildfiregames.com/0ad-${version}-${releaseType}-unix-build.tar.xz";
-    sha256 = "ef144d44fe8a8abd29a4642999a58a596b8f0d0e1f310065f5ce1dfbe29c3aeb";
+    sha256 = "1cwvhg30i6axm7y5b62qyjwf1j8gwa5fgc13xsga3gzdphmjchrd";
   };
 
   buildInputs = [
-    zeroadData python27 pkgconfig spidermonkey_24 boost icu
+    zeroadData python27 pkgconfig spidermonkey_31 boost icu
     libxml2 libpng libjpeg zlib curl libogg libvorbis enet
     miniupnpc openal mesa xproto libX11 libXcursor nspr
-    SDL gloox nvidia-texture-tools
+    SDL SDL2 gloox nvidia-texture-tools
   ] ++ stdenv.lib.optional withEditor wxGTK;
 
   NIX_CFLAGS_COMPILE = [
     "-I${xproto}/include/X11"
     "-I${libX11}/include/X11"
     "-I${libXcursor}/include/X11"
+    "-I${SDL}/include/SDL"
+    "-I${SDL2}/include/SDL2"
   ];
+
+  patchPhase = ''
+    sed -i 's/MOZJS_MINOR_VERSION/false \&\& MOZJS_MINOR_VERSION/' source/scriptinterface/ScriptTypes.h
+  '';
 
   configurePhase = ''
     # Delete shipped libraries which we don't need.
@@ -58,7 +64,7 @@ stdenv.mkDerivation rec {
       --with-system-nvtt \
       --with-system-enet \
       --with-system-miniupnpc \
-      --with-system-mozjs24 \
+      --with-system-mozjs31 \
       ${ if withEditor then "--atlas" else "" } \
       --collada \
       --bindir="$out"/bin \
@@ -80,7 +86,7 @@ stdenv.mkDerivation rec {
   installPhase = ''
     # Copy executables.
     mkdir -p "$out"/bin
-    cp binaries/system/pyrogenesis "$out"/bin/
+    cp binaries/system/pyrogenesis "$out"/bin/0ad
     ((${ toString withEditor })) && cp binaries/system/ActorEditor "$out"/bin/
 
     # Copy l10n data.
@@ -103,7 +109,7 @@ stdenv.mkDerivation rec {
     mkdir -p "$out"/share/applications
     while read LINE; do
       if [[ $LINE = "Exec=0ad" ]]; then
-        echo "Exec=$out/bin/pyrogenesis"
+        echo "Exec=$out/bin/zeroad"
       elif [[ $LINE = "Icon=0ad" ]]; then
         echo "Icon=$out/share/icons/0ad.png"
       else
@@ -120,5 +126,6 @@ stdenv.mkDerivation rec {
       licenses.zlib # otherwise masked by pkgs.zlib
     ];
     platforms = [ "x86_64-linux" "i686-linux" ];
+    hydraPlatforms = []; # the data are too big (~1.5 GB)
   };
 }

@@ -52,6 +52,15 @@ in
         '';
       };
 
+      consoleUseXkbConfig = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          If set, configure the console keymap from the xserver keyboard
+          settings.
+        '';
+      };
+
       consoleKeyMap = mkOption {
         type = mkOptionType {
           name = "string or path";
@@ -65,6 +74,23 @@ in
         '';
       };
 
+      consoleColors = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        example = [
+          "002b36" "dc322f" "859900" "b58900"
+          "268bd2" "d33682" "2aa198" "eee8d5"
+          "002b36" "cb4b16" "586e75" "657b83"
+          "839496" "6c71c4" "93a1a1" "fdf6e3"
+        ];
+        description = ''
+          The 16 colors palette used by the virtual consoles.
+          Leave empty to use the default colors.
+          Colors must be in hexadecimal format and listed in
+          order from color 0 to color 15.
+        '';
+      };
+
     };
 
   };
@@ -73,6 +99,13 @@ in
   ###### implementation
 
   config = {
+
+    i18n.consoleKeyMap = with config.services.xserver;
+      mkIf config.i18n.consoleUseXkbConfig
+        (pkgs.runCommand "xkb-console-keymap" { preferLocalBuild = true; } ''
+          '${pkgs.ckbcomp}/bin/ckbcomp' -model '${xkbModel}' -layout '${layout}' \
+            -option '${xkbOptions}' -variant '${xkbVariant}' > "$out"
+        '');
 
     environment.systemPackages =
       optional (config.i18n.supportedLocales != []) glibcLocales;

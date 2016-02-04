@@ -1,5 +1,5 @@
-{ stdenv, fetchgit, fetchurl, makeWrapper, bundlerEnv, bundler_HEAD
-, ruby, rubygemsFun, openssl, sqlite, dataDir ? "/var/lib/panamax-ui"}:
+{ stdenv, fetchgit, fetchurl, makeWrapper, bundlerEnv, bundler
+, ruby, openssl, sqlite, dataDir ? "/var/lib/panamax-ui"}@args:
 
 with stdenv.lib;
 
@@ -13,10 +13,9 @@ stdenv.mkDerivation rec {
     gemset = ./gemset.nix;
     gemfile = ./Gemfile;
     lockfile = ./Gemfile.lock;
-    buildInputs = [ openssl ];
   };
 
-  bundler = bundler_HEAD.override { inherit ruby; };
+  bundler = args.bundler.override { inherit ruby; };
 
   src = fetchgit {
     rev = "refs/tags/v${version}";
@@ -37,6 +36,8 @@ stdenv.mkDerivation rec {
     find . -type f -iname "*.haml" -exec sed -e 's|CoreOS Local|NixOS Local|g' -i "{}" \;
     find . -type f -iname "*.haml" -exec sed -e 's|CoreOS Host|NixOS Host|g' -i "{}" \;
     sed -e 's|CoreOS Local|NixOS Local|g' -i "spec/features/manage_application_spec.rb"
+    # fix libv8 dependency
+    substituteInPlace Gemfile.lock --replace "3.16.14.7" "3.16.14.11"
   '';
 
   configurePhase = ''

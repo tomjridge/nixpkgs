@@ -1,13 +1,12 @@
 { stdenv, fetchurl, perl, zlib, bzip2, xz, makeWrapper }:
 
-let version = "1.18.1"; in
-
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   name = "dpkg-${version}";
+  version = "1.18.4";
 
   src = fetchurl {
     url = "mirror://debian/pool/main/d/dpkg/dpkg_${version}.tar.xz";
-    sha256 = "1nlr0djn5zl9cmlcxxmd7dk3fx0zw9gi4qm7cfz0r5qwl9yaj9nb";
+    sha256 = "1nh6y6xvnq6f4qd6y3dx9m77sxjg4qk1z1j5pwayg348d0w292gy";
   };
 
   postPatch = ''
@@ -17,13 +16,17 @@ stdenv.mkDerivation {
       --replace "stackprotectorstrong => 1" "stackprotectorstrong => 0"
   '';
 
-  configureFlags = "--disable-dselect --with-admindir=/var/lib/dpkg PERL_LIBDIR=$(out)/${perl.libPrefix}";
+  configureFlags = [
+    "--disable-dselect"
+    "--with-admindir=/var/lib/dpkg"
+    "PERL_LIBDIR=$(out)/${perl.libPrefix}"
+  ];
 
   preConfigure = ''
-    # Nice: dpkg has a circular dependency on itself.  Its configure
+    # Nice: dpkg has a circular dependency on itself. Its configure
     # script calls scripts/dpkg-architecture, which calls "dpkg" in
-    # $PATH.  It doesn't actually use its result, but fails if it
-    # isn't present.  So make a dummy available.
+    # $PATH. It doesn't actually use its result, but fails if it
+    # isn't present, so make a dummy available.
     touch $TMPDIR/dpkg
     chmod +x $TMPDIR/dpkg
     PATH=$TMPDIR:$PATH

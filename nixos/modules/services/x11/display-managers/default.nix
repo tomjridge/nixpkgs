@@ -37,7 +37,7 @@ let
   # file provided by services.xserver.displayManager.session.script
   xsession = wm: dm: pkgs.writeScript "xsession"
     ''
-      #! /bin/sh
+      #! ${pkgs.bash}/bin/bash
 
       . /etc/profile
       cd "$HOME"
@@ -62,7 +62,7 @@ let
         if [ -z "$_INHIBITION_LOCK_TAKEN" ]; then
           export _INHIBITION_LOCK_TAKEN=1
           if ! ${config.systemd.package}/bin/loginctl show-session $XDG_SESSION_ID | grep -q '^RemoteHost='; then
-            exec ${config.systemd.package}/bin/systemd-inhibit --what=handle-lid-switch:handle-power-key --why="See NixOS configuration option 'services.xserver.displayManager.desktopManagerHandlesLidAndPower' for more information." "$0" "$sessionType"
+            exec ${config.systemd.package}/bin/systemd-inhibit --what=handle-lid-switch:handle-power-key --why="Desktop environment handles power events" "$0" "$sessionType"
           fi
         fi
 
@@ -114,6 +114,10 @@ let
       rm -rf $HOME/.compose-cache
       mkdir $HOME/.compose-cache
 
+      # Work around KDE errors when a user first logs in and
+      # .local/share doesn't exist yet.
+      mkdir -p $HOME/.local/share
+
       ${cfg.displayManager.sessionCommands}
 
       # Allow the user to execute commands at the beginning of the X session.
@@ -161,7 +165,11 @@ let
       exit 0
     '';
 
-  mkDesktops = names: pkgs.runCommand "desktops" {}
+  mkDesktops = names: pkgs.runCommand "desktops"
+    { # trivial derivation
+      preferLocalBuild = true;
+      allowSubstitutes = false;
+    }
     ''
       mkdir -p $out
       ${concatMapStrings (n: ''
@@ -225,7 +233,7 @@ in
 
       desktopManagerHandlesLidAndPower = mkOption {
         type = types.bool;
-        default = true;
+        default = false;
         description = ''
           Whether the display manager should prevent systemd from handling
           lid and power events. This is normally handled by the desktop

@@ -2,8 +2,8 @@ import ./make-test.nix (
 { pkgs
 , channelMap ? {
     stable = pkgs.chromium;
-    beta   = pkgs.chromiumBeta;
-    dev    = pkgs.chromiumDev;
+    #beta   = pkgs.chromiumBeta;
+    #dev    = pkgs.chromiumDev;
   }
 , ...
 }: rec {
@@ -15,7 +15,7 @@ import ./make-test.nix (
   enableOCR = true;
 
   machine.imports = [ ./common/x11.nix ];
-  machine.virtualisation.memorySize = 2560;
+  machine.virtualisation.memorySize = 2047;
 
   startupHTML = pkgs.writeText "chromium-startup.html" ''
     <!DOCTYPE html>
@@ -26,8 +26,8 @@ import ./make-test.nix (
     </head>
     <body onload="javascript:document.title='startup done'">
       <img src="file://${pkgs.fetchurl {
-        url = "http://nixos.org/logo/nixos.svg";
-        sha256 = "0p2iaqcx2cj24xqycfw1pi4i5461gnn0034lafpi99ph435x6z68";
+        url = "http://nixos.org/logo/nixos-hex.svg";
+        sha256 = "0wxpp65npdw2cg8m0cxc9qff1sb3b478cxpg1741d8951g948rg8";
       }}" />
     </body>
     </html>
@@ -44,6 +44,8 @@ import ./make-test.nix (
           search --onlyvisible --name "startup done"
           windowfocus --sync
           windowactivate --sync
+        ''}");
+        $machine->execute("${xdo "new-window" ''
           key Ctrl+n
         ''}");
       });
@@ -55,6 +57,8 @@ import ./make-test.nix (
           search --onlyvisible --name "new tab"
           windowfocus --sync
           windowactivate --sync
+        ''}");
+        $machine->execute("${xdo "close-window" ''
           key Ctrl+w
         ''}");
         for (1..20) {
@@ -155,6 +159,8 @@ import ./make-test.nix (
           $machine->succeed("${xdo "submit-url" ''
             search --sync --onlyvisible --name "sandbox status"
             windowfocus --sync
+          ''}");
+          $machine->succeed("${xdo "submit-url" ''
             key --delay 1000 Ctrl+a Ctrl+c
           ''}");
 

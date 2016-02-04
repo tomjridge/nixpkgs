@@ -1,23 +1,23 @@
-{ fetchurl, stdenv, perl }:
+{ fetchurl, stdenv, perl, makeWrapper, procps }:
 
 stdenv.mkDerivation rec {
-  name = "parallel-20150722";
+  name = "parallel-20160122";
 
   src = fetchurl {
     url = "mirror://gnu/parallel/${name}.tar.bz2";
-    sha256 = "0jpklc4awr5z6slgn7xjhrcpk6i8jp9mwhkkaczikvbaqzbyabkx";
+    sha256 = "1xs8y8jh7wyjs27079xz0ja7xfi4dywz8d6hbkl44mafdnnfjfiy";
   };
 
-  patchPhase =
-    '' sed -i "src/parallel" -e's|/usr/bin/perl|${perl}/bin/perl|g'
-    '';
+  nativeBuildInputs = [ makeWrapper ];
 
-  preBuild =
-    # The `sem' program wants to write to `~/.parallel'.
-    '' export HOME="$PWD"
-    '';
+  preFixup = ''
+    sed -i 's,#![ ]*/usr/bin/env[ ]*perl,#!${perl}/bin/perl,' $out/bin/*
 
-  buildInputs = [ perl ];
+    wrapProgram $out/bin/parallel \
+      ${if stdenv.isLinux then ("--prefix PATH \":\" ${procps}/bin") else ""} \
+      --prefix PATH : "${perl}/bin" \
+  '';
+
   doCheck = true;
 
   meta = with stdenv.lib; {

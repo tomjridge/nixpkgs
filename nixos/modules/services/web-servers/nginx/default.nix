@@ -8,9 +8,12 @@ let
   configFile = pkgs.writeText "nginx.conf" ''
     user ${cfg.user} ${cfg.group};
     daemon off;
+
     ${cfg.config}
+
     ${optionalString (cfg.httpConfig != "") ''
     http {
+      include ${cfg.package}/conf/mime.types;
       ${cfg.httpConfig}
     }
     ''}
@@ -31,6 +34,7 @@ in
 
       package = mkOption {
         default = pkgs.nginx;
+        defaultText = "pkgs.nginx";
         type = types.package;
         description = "
           Nginx package to use.

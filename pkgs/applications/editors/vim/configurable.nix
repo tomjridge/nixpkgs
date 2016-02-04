@@ -1,6 +1,14 @@
 # TODO tidy up eg The patchelf code is patching gvim even if you don't build it..
 # but I have gvim with python support now :) - Marc
-args@{pkgs, source ? "default", ...}: with args;
+args@{pkgs, source ? "default", fetchurl, fetchhg, stdenv, ncurses, pkgconfig, gettext
+, composableDerivation, lib, config, glib, gtk, python, perl, tcl, ruby
+, libX11, libXext, libSM, libXpm, libXt, libXaw, libXau, libXmu
+, libICE
+
+# apple frameworks
+, CoreServices, CoreData, Cocoa, Foundation, libobjc, cf-private
+
+, ... }: with args;
 
 
 let inherit (args.composableDerivation) composableDerivation edf;
@@ -85,7 +93,14 @@ composableDerivation {
           '';
         };
       }
-      // edf { name = "darwin"; } #Disable Darwin (Mac OS X) support.
+      // edf {
+        name = "darwin";
+        enable = {
+          nativeBuildInputs = [ CoreServices CoreData Cocoa Foundation libobjc cf-private ];
+          NIX_LDFLAGS = stdenv.lib.optional stdenv.isDarwin
+            "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation";
+        };
+      } #Disable Darwin (Mac OS X) support.
       // edf { name = "xsmp"; } #Disable XSMP session management
       // edf { name = "xsmp_interact"; } #Disable XSMP interaction
       // edf { name = "mzscheme"; feat = "mzschemeinterp";} #Include MzScheme interpreter.
@@ -93,26 +108,14 @@ composableDerivation {
 
       // edf {
         name = "python";
-        feat = "pythoninterp";
+        feat = "python${if python ? isPy3 then "3" else ""}interp";
         enable = {
           nativeBuildInputs = [ python ];
         } // lib.optionalAttrs stdenv.isDarwin {
           configureFlags
-            = [ "--enable-pythoninterp=yes"
-                "--with-python-config-dir=${python}/lib" ];
-        };
-      }
-
-      // edf {
-        name = "python3";
-        feat = "python3interp";
-        enable = {
-          nativeBuildInputs = [ pkgs.python3 ];
-        } // lib.optionalAttrs stdenv.isDarwin {
-          configureFlags
-            = [ "--enable-python3interp=yes"
-                "--with-python3-config-dir=${pkgs.python3}/lib"
-                "--disable-pythoninterp" ];
+            = [ "--enable-python${if python ? isPy3 then "3" else ""}interp=yes"
+                "--with-python${if python ? isPy3 then "3" else ""}-config-dir=${python}/lib"
+                "--disable-python${if python ? isPy3 then "" else "3"}interp" ];
         };
       }
 
@@ -145,7 +148,6 @@ composableDerivation {
   cfg = {
     luaSupport       = config.vim.lua or true;
     pythonSupport    = config.vim.python or true;
-    python3Support   = config.vim.python3 or false;
     rubySupport      = config.vim.ruby or true;
     nlsSupport       = config.vim.nls or false;
     tclSupport       = config.vim.tcl or false;

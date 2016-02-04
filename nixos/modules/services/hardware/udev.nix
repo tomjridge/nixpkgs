@@ -16,6 +16,12 @@ let
     destination = "/etc/udev/rules.d/10-local.rules";
   };
 
+  extraHwdbFile = pkgs.writeTextFile {
+    name = "extra-hwdb-file";
+    text = cfg.extraHwdb;
+    destination = "/etc/udev/hwdb.d/10-local.hwdb";
+  };
+
   nixosRules = ''
     # Miscellaneous devices.
     KERNEL=="kvm",                  MODE="0666"
@@ -55,7 +61,9 @@ let
           --replace \"/sbin/modprobe \"${config.system.sbin.modprobe}/sbin/modprobe \
           --replace \"/sbin/mdadm \"${pkgs.mdadm}/sbin/mdadm \
           --replace \"/sbin/blkid \"${pkgs.utillinux}/sbin/blkid \
-          --replace \"/bin/mount \"${pkgs.utillinux}/bin/mount
+          --replace \"/bin/mount \"${pkgs.utillinux}/bin/mount \
+          --replace /usr/bin/readlink ${pkgs.coreutils}/bin/readlink \
+          --replace /usr/bin/basename ${pkgs.coreutils}/bin/basename
       done
 
       echo -n "Checking that all programs called by relative paths in udev rules exist in ${udev}/lib/udev... "
@@ -86,10 +94,30 @@ let
       done
       echo "OK"
 
-      echo "Consider fixing the following udev rules:"
-      for i in ${toString cfg.packages}; do
-        grep -l '\(RUN+\|IMPORT{program}\)="\(/usr\)\?/s\?bin' $i/*/udev/rules.d/* || true
-      done
+      filesToFixup="$(for i in "$out"/*; do
+        grep -l '\B\(/usr\)\?/s\?bin' "$i" || :
+      done)"
+
+      if [ -n "$filesToFixup" ]; then
+        echo "Consider fixing the following udev rules:"
+        echo "$filesToFixup" | while read localFile; do
+          remoteFile="origin unknown"
+          for i in ${toString cfg.packages}; do
+            for j in "$i"/*/udev/rules.d/*; do
+              if [ -e "$out/$(basename "$j")" ]; then
+                remoteFile="originally from $j"
+                break 2
+              fi
+            done
+          done
+          refs="$(
+            grep -o '\B\(/usr\)\?/s\?bin/[^ "]\+' "$localFile" \
+              | sed -e ':r;N;''${s/\n/ and /;br};s/\n/, /g;br'
+          )"
+          echo "$localFile ($remoteFile) contains references to $refs."
+        done
+        exit 1
+      fi
 
       ${optionalString config.networking.usePredictableInterfaceNames ''
         cp ${./80-net-setup-link.rules} $out/80-net-setup-link.rules
@@ -102,6 +130,27 @@ let
         ln -s /dev/null $out/80-drivers.rules
       ''}
     ''; # */
+  };
+
+  hwdbBin = stdenv.mkDerivation {
+    name = "hwdb.bin";
+
+    preferLocalBuild = true;
+    allowSubstitutes = false;
+
+    buildCommand = ''
+      mkdir -p etc/udev/hwdb.d
+      for i in ${toString ([udev] ++ cfg.packages)}; do
+        echo "Adding hwdb files for package $i"
+        for j in $i/{etc,lib}/udev/hwdb.d/*; do
+          ln -s $j etc/udev/hwdb.d/$(basename $j)
+        done
+      done
+
+      echo "Generating hwdb database..."
+      ${udev}/bin/udevadm hwdb --update --root=$(pwd)
+      mv etc/udev/hwdb.bin $out
+    '';
   };
 
   # Udev has a 512-character limit for ENV{PATH}, so create a symlink
@@ -168,6 +217,21 @@ in
         '';
       };
 
+      extraHwdb = mkOption {
+        default = "";
+        example = ''
+          evdev:input:b0003v05AFp8277*
+            KEYBOARD_KEY_70039=leftalt
+            KEYBOARD_KEY_700e2=leftctrl
+        '';
+        type = types.lines;
+        description = ''
+          Additional <command>hwdb</command> files. They'll be written
+          into file <filename>10-local.hwdb</filename>. Thus they are
+          read before all other files.
+        '';
+      };
+
     };
 
     hardware.firmware = mkOption {
@@ -180,9 +244,7 @@ in
         firmware to function).  If multiple packages contain firmware
         files with the same name, the first package in the list takes
         precedence.  Note that you must rebuild your system if you add
-        files to any of these directories.  For quick testing,
-        put firmware files in <filename>/root/test-firmware</filename>
-        and add that directory to the list.
+        files to any of these directories.
       '';
       apply = list: pkgs.buildEnv {
         name = "firmware";
@@ -218,13 +280,16 @@ in
 
     services.udev.extraRules = nixosRules;
 
-    services.udev.packages = [ extraUdevRules ];
+    services.udev.packages = [ extraUdevRules extraHwdbFile ];
 
     services.udev.path = [ pkgs.coreutils pkgs.gnused pkgs.gnugrep pkgs.utillinux udev ];
 
     environment.etc =
       [ { source = udevRules;
           target = "udev/rules.d";
+        }
+        { source = hwdbBin;
+          target = "udev/hwdb.bin";
         }
       ];
 
@@ -241,13 +306,6 @@ in
         # The deprecated hotplug uevent helper is not used anymore
         if [ -e /proc/sys/kernel/hotplug ]; then
           echo "" > /proc/sys/kernel/hotplug
-        fi
-
-        # Regenerate the hardware database /var/lib/udev/hwdb.bin
-        # whenever systemd changes.
-        if [ ! -e /var/lib/udev/prev-systemd -o "$(readlink /var/lib/udev/prev-systemd)" != ${config.systemd.package} ]; then
-          echo "regenerating udev hardware database..."
-          ${config.systemd.package}/bin/udevadm hwdb --update && ln -sfn ${config.systemd.package} /var/lib/udev/prev-systemd
         fi
 
         # Allow the kernel to find our firmware.

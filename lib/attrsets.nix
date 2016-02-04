@@ -23,6 +23,17 @@ rec {
       then attrByPath (tail attrPath) default e.${attr}
       else default;
 
+  /* Return if an attribute from nested attribute set exists.
+     For instance ["x" "y"] applied to some set e returns true, if e.x.y exists. False
+     is returned otherwise. */
+  hasAttrByPath = attrPath: e:
+    let attr = head attrPath;
+    in
+      if attrPath == [] then true
+      else if e ? ${attr}
+      then hasAttrByPath (tail attrPath) e.${attr}
+      else false;
+
 
   /* Return nested attribute set in which an attribute is set.  For instance
      ["x" "y"] applied with some value v returns `x.y = v;' */
@@ -78,6 +89,26 @@ rec {
     listToAttrs (concatMap (name: let v = set.${name}; in if pred name v then [(nameValuePair name v)] else []) (attrNames set));
 
 
+  /* Filter an attribute set recursivelly by removing all attributes for
+     which the given predicate return false.
+
+     Example:
+       filterAttrsRecursive (n: v: v != null) { foo = { bar = null; }; }
+       => { foo = {}; }
+  */
+  filterAttrsRecursive = pred: set:
+    listToAttrs (
+      concatMap (name:
+        let v = set.${name}; in
+        if pred name v then [
+          (nameValuePair name (
+            if isAttrs v then filterAttrsRecursive pred v
+            else v
+          ))
+        ] else []
+      ) (attrNames set)
+    );
+
   /* foldAttrs: apply fold functions to values grouped by key. Eg accumulate values as list:
      foldAttrs (n: a: [n] ++ a) [] [{ a = 2; } { a = 3; }]
      => { a = [ 2 3 ]; }
@@ -96,7 +127,7 @@ rec {
 
      Type:
        collect ::
-         (AttrSet -> Bool) -> AttrSet -> AttrSet
+         (AttrSet -> Bool) -> AttrSet -> [x]
 
      Example:
        collect isList { a = { b = ["b"]; }; c = [1]; }

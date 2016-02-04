@@ -169,14 +169,17 @@ in {
         type = types.bool;
         default = false;
         description = ''
-          Whether to enable Bacula File Daemon.
+          Whether to enable the Bacula File Daemon.
         '';
       };
  
       name = mkOption {
         default = "${config.networking.hostName}-fd";
         description = ''
-        	The client name that must be used by the Director when connecting. Generally, it is a good idea to use a name related to the machine so that error messages can be easily identified if you have multiple Clients. This directive is required.
+          The client name that must be used by the Director when connecting.
+          Generally, it is a good idea to use a name related to the machine
+          so that error messages can be easily identified if you have multiple
+          Clients. This directive is required.
         '';
       };
  
@@ -184,7 +187,9 @@ in {
         default = 9102;
         type = types.int;
         description = ''
-        	This specifies the port number on which the Client listens for Director connections. It must agree with the FDPort specified in the Client resource of the Director's configuration file. The default is 9102.
+          This specifies the port number on which the Client listens for
+          Director connections. It must agree with the FDPort specified in
+          the Client resource of the Director's configuration file.
         '';
       };
  

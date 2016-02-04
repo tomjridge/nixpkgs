@@ -57,6 +57,7 @@ in
     users.ldap = {
 
       enable = mkOption {
+        type = types.bool;
         default = false;
         description = "Whether to enable authentication against an LDAP server.";
       };
@@ -108,7 +109,7 @@ in
 
         extraConfig = mkOption {
           default =  "";
-          type = types.string;
+          type = types.lines;
           description = ''
             Extra configuration options that will be added verbatim at
             the end of the nslcd configuration file (nslcd.conf).
@@ -120,7 +121,7 @@ in
         distinguishedName = mkOption {
           default = "";
           example = "cn=admin,dc=example,dc=com";
-          type = types.string;
+          type = types.str;
           description = ''
             The distinguished name to bind to the LDAP server with. If this
             is not specified, an anonymous bind will be done.
@@ -129,7 +130,7 @@ in
 
         password = mkOption {
           default = "/etc/ldap/bind.password";
-          type = types.string;
+          type = types.str;
           description = ''
             The path to a file containing the credentials to use when binding
             to the LDAP server (if not binding anonymously).
@@ -149,7 +150,7 @@ in
 
         policy = mkOption {
           default = "hard_open";
-          type = types.string;
+          type = types.enum [ "hard_open" "hard_init" "soft" ];
           description = ''
             Specifies the policy to use for reconnecting to an unavailable
             LDAP server. The default is <literal>hard_open</literal>, which
@@ -168,7 +169,7 @@ in
 
       extraConfig = mkOption {
         default = "";
-        type = types.string;
+        type = types.lines;
         description = ''
           Extra configuration options that will be added verbatim at
           the end of the ldap configuration file (ldap.conf).

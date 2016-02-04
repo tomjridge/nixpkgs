@@ -12,6 +12,9 @@ stdenv.mkDerivation rec {
     rm -rf gtest
     cp -r ${gtest.source} gtest
     chmod -R a+w gtest
+  '' + stdenv.lib.optionalString stdenv.isDarwin ''
+    substituteInPlace src/google/protobuf/testing/googletest.cc \
+      --replace 'tmpnam(b)' '"'$TMPDIR'/foo"'
   '';
 
   buildInputs = [ autoreconfHook zlib ];
@@ -29,7 +32,7 @@ stdenv.mkDerivation rec {
 
     license = "mBSD";
 
-    homepage = http://code.google.com/p/protobuf/;
+    homepage = https://developers.google.com/protocol-buffers/;
   };
 
   passthru.version = version;

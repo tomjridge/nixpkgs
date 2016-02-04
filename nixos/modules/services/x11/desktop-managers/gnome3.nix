@@ -62,8 +62,9 @@ in {
     };
 
     environment.gnome3.packageSet = mkOption {
+      type = types.nullOr types.package;
       default = null;
-      example = literalExample "pkgs.gnome3_16";
+      example = literalExample "pkgs.gnome3_18";
       description = "Which GNOME 3 package set to use.";
       apply = p: if p == null then pkgs.gnome3 else p;
     };
@@ -99,12 +100,12 @@ in {
     networking.networkmanager.enable = mkDefault true;
     services.upower.enable = config.powerManagement.enable;
     hardware.bluetooth.enable = mkDefault true;
-    services.xserver.displayManager.desktopManagerHandlesLidAndPower = false; # true doesn't make sense here, GNOME just doesn't handle it anymore
 
     fonts.fonts = [ pkgs.dejavu_fonts pkgs.cantarell_fonts ];
 
     services.xserver.desktopManager.session = singleton
       { name = "gnome3";
+        bgSupport = true;
         start = ''
           # Set GTK_DATA_PREFIX so that GTK+ can find the themes
           export GTK_DATA_PREFIX=${config.system.path}
@@ -139,9 +140,6 @@ in {
 
           # Update user dirs as described in http://freedesktop.org/wiki/Software/xdg-user-dirs/
           ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update
-
-          # Find the mouse
-          export XCURSOR_PATH=~/.icons:${config.system.path}/share/icons
 
           ${gnome3.gnome_session}/bin/gnome-session&
           waitPID=$!

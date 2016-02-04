@@ -2,11 +2,11 @@
 , libX11, libXext, libXv, libXrandr, glib, bison, libunwind }:
 
 stdenv.mkDerivation rec {
-  name = "intel-gpu-tools-1.11";
+  name = "intel-gpu-tools-1.13";
 
   src = fetchurl {
     url = "http://xorg.freedesktop.org/archive/individual/app/${name}.tar.bz2";
-    sha256 = "1r5dbp2gdxqryv1fhxy83k4d1kfp7rv8q370fhncamrb8m8390j8";
+    sha256 = "0d5ff9l12zw9mdsjwbwn6y9k1gz6xlzsx5k87apz9vq6q625irn6";
   };
 
   buildInputs = [ pkgconfig libdrm libpciaccess cairo dri2proto udev libX11

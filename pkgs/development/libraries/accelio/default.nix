@@ -6,14 +6,16 @@
 
 stdenv.mkDerivation rec {
   name = "accelio-${version}${stdenv.lib.optionalString (kernel != null) "-kernel"}";
-  version = "2015-07-28";
+  version = "1.5";
 
   src = fetchFromGitHub {
     owner = "accelio";
     repo = "accelio";
-    rev = "0c4b6d535831650112ba9409a5c7d6e1bc436d61";
-    sha256 = "044m92pnvdl64irvy7bdqr51gz0qr5f14xnsig4gkc3vb0afbb4j";
+    rev = "v1.5";
+    sha256 = "172frqk2n43g0arhazgcwfvj0syf861vdzdpxl7idr142bb0ykf7";
   };
+
+  patches = [ ./fix-printfs.patch ];
 
   postPatch = ''
     # Don't build broken examples
@@ -45,7 +47,11 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     homepage = http://www.accelio.org/;
-    description = "a high-performance asynchronous reliable messaging and RPC library optimized for hardware acceleration";
+    description = "High-performance messaging and RPC library";
+    longDescription = ''
+      A high-performance asynchronous reliable messaging and RPC library
+      optimized for hardware acceleration.
+    '';
     license = licenses.bsd3;
     platforms = with platforms; linux ++ freebsd;
     maintainers = with maintainers; [ wkennington ];

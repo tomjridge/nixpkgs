@@ -1,6 +1,6 @@
 { stdenv, fetchurl, python, zlib, pkgconfig, glib, ncurses, perl, pixman
 , attr, libcap, vde2, alsaLib, texinfo, libuuid, flex, bison, lzo, snappy
-, libseccomp, libaio, libcap_ng, gnutls
+, libseccomp, libaio, libcap_ng, gnutls, nettle, numactl
 , makeWrapper
 , pulseSupport ? true, libpulseaudio
 , sdlSupport ? true, SDL
@@ -11,24 +11,24 @@
 
 with stdenv.lib;
 let
-  n = "qemu-2.2.1";
+  version = "2.4.1";
   audio = optionalString (hasSuffix "linux" stdenv.system) "alsa,"
     + optionalString pulseSupport "pa,"
     + optionalString sdlSupport "sdl,";
 in
 
 stdenv.mkDerivation rec {
-  name = n + (if x86Only then "-x86-only" else "");
+  name = "qemu-" + stdenv.lib.optionalString x86Only "x86-only-" + version;
 
   src = fetchurl {
-    url = "http://wiki.qemu.org/download/${n}.tar.bz2";
-    sha256 = "181m2ddsg3adw8y5dmimsi8x678imn9f6i5p20zbhi7pdr61a5s6";
+    url = "http://wiki.qemu.org/download/qemu-${version}.tar.bz2";
+    sha256 = "0xx1wc7lj5m3r2ab7f0axlfknszvbd8rlclpqz4jk48zid6czmg3";
   };
 
   buildInputs =
     [ python zlib pkgconfig glib ncurses perl pixman attr libcap
       vde2 texinfo libuuid flex bison makeWrapper lzo snappy libseccomp
-      libcap_ng gnutls
+      libcap_ng gnutls nettle numactl
     ]
     ++ optionals pulseSupport [ libpulseaudio ]
     ++ optionals sdlSupport [ SDL ]
@@ -42,6 +42,7 @@ stdenv.mkDerivation rec {
 
   configureFlags =
     [ "--enable-seccomp"
+      "--enable-numa"
       "--smbd=smbd" # use `smbd' from $PATH
       "--audio-drv-list=${audio}"
       "--sysconfdir=/etc"

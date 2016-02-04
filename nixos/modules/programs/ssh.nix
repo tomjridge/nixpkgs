@@ -18,6 +18,14 @@ let
       exec ${askPassword}
     '';
 
+  knownHosts = map (h: getAttr h cfg.knownHosts) (attrNames cfg.knownHosts);
+
+  knownHostsText = flip (concatMapStringsSep "\n") knownHosts
+    (h: assert h.hostNames != [];
+      concatStringsSep "," h.hostNames + " "
+      + (if h.publicKey != null then h.publicKey else readFile h.publicKeyFile)
+    );
+
 in
 {
   ###### interface
@@ -28,7 +36,6 @@ in
 
       askPassword = mkOption {
         type = types.str;
-        default = "${pkgs.x11_ssh_askpass}/libexec/x11-ssh-askpass";
         description = ''Program used by SSH to ask for passwords.'';
       };
 
@@ -86,9 +93,68 @@ in
       };
 
       package = mkOption {
+        type = types.package;
         default = pkgs.openssh;
+        defaultText = "pkgs.openssh";
         description = ''
           The package used for the openssh client and daemon.
+        '';
+      };
+
+      knownHosts = mkOption {
+        default = {};
+        type = types.loaOf (types.submodule ({ name, ... }: {
+          options = {
+            hostNames = mkOption {
+              type = types.listOf types.str;
+              default = [];
+              description = ''
+                A list of host names and/or IP numbers used for accessing
+                the host's ssh service.
+              '';
+            };
+            publicKey = mkOption {
+              default = null;
+              type = types.nullOr types.str;
+              example = "ecdsa-sha2-nistp521 AAAAE2VjZHN...UEPg==";
+              description = ''
+                The public key data for the host. You can fetch a public key
+                from a running SSH server with the <command>ssh-keyscan</command>
+                command. The public key should not include any host names, only
+                the key type and the key itself.
+              '';
+            };
+            publicKeyFile = mkOption {
+              default = null;
+              type = types.nullOr types.path;
+              description = ''
+                The path to the public key file for the host. The public
+                key file is read at build time and saved in the Nix store.
+                You can fetch a public key file from a running SSH server
+                with the <command>ssh-keyscan</command> command. The content
+                of the file should follow the same format as described for
+                the <literal>publicKey</literal> option.
+              '';
+            };
+          };
+          config = {
+            hostNames = mkDefault [ name ];
+          };
+        }));
+        description = ''
+          The set of system-wide known SSH hosts.
+        '';
+        example = literalExample ''
+          [
+            {
+              hostNames = [ "myhost" "myhost.mydomain.com" "10.10.1.4" ];
+              publicKeyFile = "./pubkeys/myhost_ssh_host_dsa_key.pub";
+            }
+            {
+              hostNames = [ "myhost2" ];
+              publicKeyFile = "./pubkeys/myhost2_ssh_host_dsa_key.pub";
+            }
+          ]
         '';
       };
 
@@ -98,10 +164,15 @@ in
 
   config = {
 
-    assertions = singleton
-      { assertion = cfg.forwardX11 -> cfg.setXAuthLocation;
-        message = "cannot enable X11 forwarding without setting XAuth location";
-      };
+    assertions =
+      [ { assertion = cfg.forwardX11 -> cfg.setXAuthLocation;
+          message = "cannot enable X11 forwarding without setting XAuth location";
+        }
+      ] ++ flip mapAttrsToList cfg.knownHosts (name: data: {
+        assertion = (data.publicKey == null && data.publicKeyFile != null) ||
+                    (data.publicKey != null && data.publicKeyFile == null);
+        message = "knownHost ${name} must contain either a publicKey or publicKeyFile";
+      });
 
     # SSH configuration. Slight duplication of the sshd_config
     # generation in the sshd service.
@@ -115,8 +186,13 @@ in
 
         ForwardX11 ${if cfg.forwardX11 then "yes" else "no"}
 
+        # Allow DSA keys for now. (These were deprecated in OpenSSH 7.0.)
+        PubkeyAcceptedKeyTypes +ssh-dss
+
         ${cfg.extraConfig}
       '';
+
+    environment.etc."ssh/ssh_known_hosts".text = knownHostsText;
 
     # FIXME: this should really be socket-activated for über-awesomeness.
     systemd.user.services.ssh-agent =
@@ -148,10 +224,9 @@ in
         fi
       '';
 
-    environment.interactiveShellInit = optionalString config.services.xserver.enable
-      ''
-        export SSH_ASKPASS=${askPassword}
-      '';
+    environment.variables.SSH_ASKPASS = optionalString config.services.xserver.enable askPassword;
+
+    programs.ssh.askPassword = mkDefault "${pkgs.x11_ssh_askpass}/libexec/x11-ssh-askpass";
 
   };
 }

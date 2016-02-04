@@ -1,14 +1,14 @@
 { stdenv, fetchFromGitHub, go }:
 
 stdenv.mkDerivation rec {
-  version = "0.6.0";
+  version = "0.8.0";
   name = "xurls-${version}";
 
   src = fetchFromGitHub {
     owner = "mvdan";
     repo = "xurls";
     rev = "v${version}";
-    sha256 = "0v9qfvvwy0pq7wp5q19y4a61mcc1sj8vkhvhb8bk603gzprfs10z";
+    sha256 = "0j35x6hl5hiwzpi6vjw9d2sn83rrsd9w07ql9kndhkngz8n6yr98";
   };
 
   buildInputs = [ go ];

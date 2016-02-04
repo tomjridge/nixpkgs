@@ -5,24 +5,25 @@ assert useGnupg1 -> gnupg1 != null;
 assert !useGnupg1 -> gnupg != null;
 
 let
-  gpgPath = if useGnupg1 then
-    "${gnupg1}/bin/gpg"
-  else
-    "${gnupg}/bin/gpg2";
+  gpgStorePath = if useGnupg1 then gnupg1 else gnupg;
+  gpgProgram = if useGnupg1 then "gpg" else "gpg2";
 in
 stdenv.mkDerivation rec {
-  name = "gpgme-1.5.5";
+  name = "gpgme-1.6.0";
 
   src = fetchurl {
     url = "mirror://gnupg/gpgme/${name}.tar.bz2";
-    sha256 = "01y28fkq52wwf4p470wscaxd2vgzl615irmafx3mj3380x8ksg8b";
+    sha256 = "17892sclz3yg45wbyqqrzzpq3l0icbnfl28f101b3062g8cy97dh";
   };
 
   propagatedBuildInputs = [ libgpgerror glib libassuan pth ];
 
   nativeBuildInputs = [ pkgconfig gnupg ];
 
-  configureFlags = "--with-gpg=${gpgPath}";
+  configureFlags = [
+    "--with-gpg=${gpgStorePath}/bin/${gpgProgram}"
+    "--enable-fixed-path=${gpgStorePath}/bin"
+  ];
 
   meta = {
     homepage = "http://www.gnupg.org/related_software/gpgme";

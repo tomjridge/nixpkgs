@@ -1,17 +1,18 @@
-{stdenv, fetchgit, rustPlatform, makeWrapper }:
+{ stdenv, fetchFromGitHub, rustPlatform, makeWrapper }:
 
 with rustPlatform;
 
 buildRustPackage rec {
-  #TODO add emacs support
-  name = "racer-git-2015-05-18";
-  src = fetchgit {
-    url = https://github.com/phildawes/racer;
-    rev = "c2d31ed49baa11f06ffc0c7bc8f95dd00037d035";
-    sha256 = "0g420cbqpknhl61a4mpk3bbia8agf657d9vzzcqr338lmni80qz7";
+  name = "racer-${version}";
+  version = "1.1.0";
+  src = fetchFromGitHub {
+    owner = "phildawes";
+    repo = "racer";
+    rev = "v${version}";
+    sha256 = "1y6xzavxm5bnqcnnz0mbnf2491m2kksp36yx3kd5mxyly33482y7";
   };
 
-  depsSha256 = "0s951apqcr96lvc1jamk6qw3631gwnlnfgcx55vlznfm7shnmywn";
+  depsSha256 = "1r2fxirkc0y6g7aas65n3yg1f2lf3kypnjr2v20p5np2lvla6djj";
 
   buildInputs = [ makeWrapper ];
 
@@ -23,14 +24,12 @@ buildRustPackage rec {
     mkdir -p $out/bin
     cp -p target/release/racer $out/bin/
     wrapProgram $out/bin/racer --set RUST_SRC_PATH "${rustc.src}/src"
-    install -d $out/share/emacs/site-lisp
-    install "editors/"*.el $out/share/emacs/site-lisp
   '';
 
   meta = with stdenv.lib; {
     description = "A utility intended to provide Rust code completion for editors and IDEs";
     homepage = https://github.com/phildawes/racer;
     license = stdenv.lib.licenses.mit;
-    maintainers = [ maintainers.jagajaga ];
+    maintainers = with maintainers; [ jagajaga globin ];
   };
 }

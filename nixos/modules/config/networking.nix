@@ -39,6 +39,27 @@ in
       '';
     };
 
+    networking.dnsExtensionMechanism = lib.mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Enable the <code>edns0</code> option in <filename>resolv.conf</filename>. With
+        that option set, <code>glibc</code> supports use of the extension mechanisms for
+        DNS (EDNS) specified in RFC 2671. The most popular user of that feature is DNSSEC,
+        which does not work without it.
+      '';
+    };
+
+    networking.extraResolvconfConf = lib.mkOption {
+      type = types.lines;
+      default = "";
+      example = "libc=NO";
+      description = ''
+        Extra configuration to append to <filename>resolvconf.conf</filename>.
+      '';
+    };
+
+
     networking.proxy = {
 
       default = lib.mkOption {
@@ -82,6 +103,15 @@ in
         default = cfg.proxy.default;
         description = ''
           This option specifies the rsync_proxy environment variable.
+        '';
+        example = "http://127.0.0.1:3128";
+      };
+
+      allProxy = lib.mkOption {
+        type = types.nullOr types.str;
+        default = cfg.proxy.default;
+        description = ''
+          This option specifies the all_proxy environment variable.
         '';
         example = "http://127.0.0.1:3128";
       };
@@ -143,13 +173,17 @@ in
               libc_restart='${pkgs.systemd}/bin/systemctl try-restart --no-block nscd.service 2> /dev/null'
             '' + optionalString cfg.dnsSingleRequest ''
               # only send one DNS request at a time
-              resolv_conf_options='single-request'
+              resolv_conf_options+=' single-request'
+            '' + optionalString cfg.dnsExtensionMechanism ''
+              # enable extension mechanisms for DNS
+              resolv_conf_options+=' edns0'
             '' + optionalString hasLocalResolver ''
               # This hosts runs a full-blown DNS resolver.
               name_servers='127.0.0.1'
             '' + optionalString dnsmasqResolve ''
               dnsmasq_conf=/etc/dnsmasq-conf.conf
               dnsmasq_resolv=/etc/dnsmasq-resolv.conf
+            '' + cfg.extraResolvconfConf + ''
             '';
 
       } // (optionalAttrs config.services.resolved.enable (
@@ -172,6 +206,8 @@ in
           rsync_proxy = cfg.proxy.rsyncProxy;
         } // optionalAttrs (cfg.proxy.ftpProxy != null) {
           ftp_proxy   = cfg.proxy.ftpProxy;
+        } // optionalAttrs (cfg.proxy.allProxy != null) {
+          all_proxy   = cfg.proxy.allProxy;
         } // optionalAttrs (cfg.proxy.noProxy != null) {
           no_proxy    = cfg.proxy.noProxy;
         };

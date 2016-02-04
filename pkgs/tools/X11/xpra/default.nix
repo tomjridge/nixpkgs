@@ -1,6 +1,6 @@
 { stdenv, fetchurl, buildPythonPackage, pythonPackages
 , python, cython, pkgconfig
-, xorg, gtk, glib, pango, cairo, gdk_pixbuf, pygtk, atk, pygobject, pycairo
+, xorg, gtk, glib, pango, cairo, gdk_pixbuf, atk, pycairo
 , makeWrapper, xkbcomp, xorgserver, getopt, xauth, utillinux, which, fontsConf, xkeyboard_config
 , ffmpeg, x264, libvpx, pil, libwebp
 , libfakeXinerama
@@ -30,13 +30,10 @@ buildPythonPackage rec {
     makeWrapper
   ];
 
+  # was pil
   propagatedBuildInputs = [
-    pil pygtk pygobject pythonPackages.rencode lz4 pythonPackages.python_lz4
+    pillow pygtk pygobject pythonPackages.rencode lz4 pythonPackages.python_lz4
   ];
-
-  postPatch = ''
-    sed -i 's|DEFAULT_XVFB_COMMAND = "Xvfb|DEFAULT_XVFB_COMMAND = "Xvfb -xkbdir ${xkeyboard_config}/etc/X11/xkb|' xpra/platform/features.py
-  '';
 
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE $(pkg-config --cflags gtk+-2.0) $(pkg-config --cflags pygtk-2.0) $(pkg-config --cflags xtst)"
