@@ -562,3 +562,31 @@ could be that we just have to restart after selecting look and feel? yes, this f
 
 
 phew!
+* 2016-02-04 need to get ocaml trunk for updated set lib; merge upstream
+
+  - conflict in python packages
+  - how to use git to maintain extra stuff ontop of nixpkgs?
+    - work in separate branch
+    - 
+  - how to write small additions to nixpkgs that don't involve copying the entire tree?
+    - we do this already in eg sibylfs
+    - 
+
+delaying this for now
+
+resolved merge conflicts
+
+updated /tmp/l/github/other/ocaml
+
+added ocaml_trunk in trunk.nix
+
+nix-build -A ocaml_trunk
+
+doesn't know what to do with src=/tmp/l/github/ocaml
+
+presumably we need to change the unpackPhase
+
+an alternative is to include ocaml dir locally, as a link i same dir as trunk.nix
+
+ocaml no longer has ocamlbuild :( hopefully we can use the ocamlbuild
+that is already installed by opam

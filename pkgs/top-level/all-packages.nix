@@ -4456,6 +4456,8 @@ let
 
   ocaml_4_02 = callPackage ../development/compilers/ocaml/4.02.nix { };
 
+  ocaml_trunk = callPackage ../development/compilers/ocaml/trunk.nix { };
+  
   orc = callPackage ../development/compilers/orc { };
 
   metaocaml_3_09 = callPackage ../development/compilers/ocaml/metaocaml-3.09.nix { };
