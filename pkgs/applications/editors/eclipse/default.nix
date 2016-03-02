@@ -86,7 +86,7 @@ rec {
       if stdenv.system == "x86_64-linux" then
         fetchurl { # tested
           url = http://downloads.typesafe.com/scalaide-pack/4.3.0-vfinal-luna-211-20151201/scala-SDK-4.3.0-vfinal-2.11-linux.gtk.x86_64.tar.gz;
-          sha256  = "d3e9efe1176d979dc0fe2a9457f70068b5a3fd23635a07bcd5639e2345897aca";
+          sha256  = "bc6b9289ab318a4eb7e273a2990351cc051a00051b208192591c0a6fad5da20d";
         }
       else
         fetchurl { # untested

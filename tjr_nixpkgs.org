@@ -596,6 +596,7 @@ that is already installed by opam
 
 update eclipse/default.nix to add 43
 
+merge upstream/master; clash in xpra
 
   - nix-build -A eclipses.eclipse_scala_sdk_43
   - nix-env -i ./result
