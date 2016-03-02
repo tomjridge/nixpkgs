@@ -13,13 +13,13 @@ let
   extraUdevRules = pkgs.writeTextFile {
     name = "extra-udev-rules";
     text = cfg.extraRules;
-    destination = "/etc/udev/rules.d/10-local.rules";
+    destination = "/etc/udev/rules.d/99-local.rules";
   };
 
   extraHwdbFile = pkgs.writeTextFile {
     name = "extra-hwdb-file";
     text = cfg.extraHwdb;
-    destination = "/etc/udev/hwdb.d/10-local.hwdb";
+    destination = "/etc/udev/hwdb.d/99-local.hwdb";
   };
 
   nixosRules = ''
@@ -104,10 +104,10 @@ let
           remoteFile="origin unknown"
           for i in ${toString cfg.packages}; do
             for j in "$i"/*/udev/rules.d/*; do
-              if [ -e "$out/$(basename "$j")" ]; then
-                remoteFile="originally from $j"
-                break 2
-              fi
+              [ -e "$out/$(basename "$j")" ] || continue
+              [ "$(basename "$j")" = "$(basename "$localFile")" ] || continue
+              remoteFile="originally from $j"
+              break 2
             done
           done
           refs="$(
@@ -212,8 +212,8 @@ in
         type = types.lines;
         description = ''
           Additional <command>udev</command> rules. They'll be written
-          into file <filename>10-local.rules</filename>. Thus they are
-          read before all other rules.
+          into file <filename>99-local.rules</filename>. Thus they are
+          read and applied after all other rules.
         '';
       };
 
@@ -316,6 +316,7 @@ in
 
     systemd.services.systemd-udevd =
       { environment.MODULE_DIR = "/run/booted-system/kernel-modules/lib/modules";
+        restartTriggers = cfg.packages;
       };
 
   };

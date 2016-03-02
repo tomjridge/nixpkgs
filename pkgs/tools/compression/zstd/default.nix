@@ -3,10 +3,10 @@
 
 stdenv.mkDerivation rec {
   name = "zstd-${version}";
-  version = "0.4.7";
+  version = "0.5.1";
 
   src = fetchFromGitHub {
-    sha256 = "09l917979qfqk44dbgsa9vs37a2qj4ga43553zcgvnps02wlja8s";
+    sha256 = "18mfrq5fqd7gkkqrgc32rlb98vw45rq1vsbrg44bprg3mv6ca3ls";
     rev = "v${version}";
     repo = "zstd";
     owner = "Cyan4973";
