@@ -1,4 +1,4 @@
-{ stdenv, fetchurl }:
+{ stdenv, fetchurl, pkgs }:
 
 let
 
@@ -18,11 +18,15 @@ let
       };
     };
 
-  grsecPatch = { grversion ? "3.1", kversion, revision, branch, sha256 }:
+  grsecPatch = { grversion ? "3.1", kernel, patches, kversion, revision, branch ? "test", sha256 }:
+    assert kversion == kernel.version;
     { name = "grsecurity-${grversion}-${kversion}";
-      inherit grversion kversion revision;
+      inherit grversion kernel patches kversion revision;
+      # When updating versions/hashes, ALWAYS use the official version; we use
+      # this mirror only because upstream removes sources files immediately upon
+      # releasing a new version ...
       patch = fetchurl {
-        url = "https://github.com/slashbeast/grsecurity-scrape/blob/master/${branch}/grsecurity-${grversion}-${kversion}-${revision}.patch?raw=true";
+        url = "https://raw.githubusercontent.com/slashbeast/grsecurity-scrape/master/test/grsecurity-${grversion}-${kversion}-${revision}.patch";
         inherit sha256;
       };
       features.grsecurity = true;
@@ -31,6 +35,16 @@ let
 in
 
 rec {
+
+  link_lguest =
+    { name = "gcc5-link-lguest";
+      patch = ./gcc5-link-lguest.patch;
+    };
+
+  link_apm =
+    { name = "gcc5-link-apm";
+      patch = ./gcc5-link-apm.patch;
+    };
 
   bridge_stp_helper =
     { name = "bridge-stp-helper";
@@ -58,14 +72,9 @@ rec {
       patch = ./mips-ext3-n32.patch;
     };
 
-  ubuntu_fan =
+  ubuntu_fan_4_4 =
     { name = "ubuntu-fan";
-      patch = ./ubuntu-fan-3.patch;
-    };
-
-  ubuntu_fan_4 =
-    { name = "ubuntu-fan";
-      patch = ./ubuntu-fan-4.patch;
+      patch = ./ubuntu-fan-4.4.patch;
     };
 
   ubuntu_unprivileged_overlayfs =
@@ -79,23 +88,23 @@ rec {
     sha256 = "00b1rqgd4yr206dxp4mcymr56ymbjcjfa4m82pxw73khj032qw3j";
   };
 
-  grsecurity_stable = grsecPatch
-    { kversion  = "3.14.51";
-      revision  = "201508181951";
-      branch    = "stable";
-      sha256    = "1sp1gwa7ahzflq7ayb51bg52abrn5zx1hb3pff3axpjqq7vfai6f";
+  grsecurity_3_14 = throw "grsecurity stable is no longer supported";
+
+  grsecurity_4_4 = throw "grsecurity stable is no longer supported";
+
+  grsecurity_4_5 = grsecPatch
+    { kernel    = pkgs.grsecurity_base_linux_4_5;
+      patches   = [ grsecurity_fix_path_4_5 ];
+      kversion  = "4.5.5";
+      revision  = "201605291201";
+      sha256    = "0r66l5zmvlb7phlvi1pma7vzj78krl23k8lcpdqlx27szr361sda";
     };
 
-  grsecurity_unstable = grsecPatch
-    { kversion  = "4.3.4";
-      revision  = "201601231215";
-      branch    = "test";
-      sha256    = "1dacld4zlp8mk6ykc0f1v5crppvq3znbdw9rwfrf6qi90984x0mr";
-    };
+  grsecurity_latest = grsecurity_4_5;
 
-  grsec_fix_path =
-    { name = "grsec-fix-path";
-      patch = ./grsec-path.patch;
+  grsecurity_fix_path_4_5 =
+    { name = "grsecurity-fix-path-4.5";
+      patch = ./grsecurity-path-4.5.patch;
     };
 
   crc_regression =
@@ -127,5 +136,9 @@ rec {
   chromiumos_mfd_fix_dependency =
     { name = "mfd_fix_dependency";
       patch = ./chromiumos-patches/mfd-fix-dependency.patch;
+    };
+  qat_common_Makefile =
+    { name = "qat_common_Makefile";
+      patch = ./qat_common_Makefile.patch;
     };
 }

@@ -30,7 +30,7 @@ let
         # SAPI modules:
 
         apxs2 = {
-          configureFlags = ["--with-apxs2=${apacheHttpd}/bin/apxs"];
+          configureFlags = ["--with-apxs2=${apacheHttpd.dev}/bin/apxs"];
           buildInputs = [apacheHttpd];
         };
 
@@ -44,7 +44,13 @@ let
         };
 
         ldap = {
-          configureFlags = ["--with-ldap=${openldap}"];
+          configureFlags = [
+            "--with-ldap"
+            "LDAP_DIR=${openldap.dev}"
+            "LDAP_INCDIR=${openldap.dev}/include"
+            "LDAP_LIBDIR=${openldap.out}/lib"
+            "--with-ldap-sasl=${cyrus_sasl.dev}"
+            ];
           buildInputs = [openldap cyrus_sasl openssl];
         };
 
@@ -54,7 +60,7 @@ let
         };
 
         curl = {
-          configureFlags = ["--with-curl=${curl}"];
+          configureFlags = ["--with-curl=${curl.dev}"];
           buildInputs = [curl openssl];
         };
 
@@ -63,13 +69,13 @@ let
         };
 
         zlib = {
-          configureFlags = ["--with-zlib=${zlib}"];
+          configureFlags = ["--with-zlib=${zlib.dev}"];
           buildInputs = [zlib];
         };
 
         libxml2 = {
           configureFlags = [
-            "--with-libxml-dir=${libxml2}"
+            "--with-libxml-dir=${libxml2.dev}"
             ];
           buildInputs = [ libxml2 ];
         };
@@ -79,12 +85,12 @@ let
         };
 
         readline = {
-          configureFlags = ["--with-readline=${readline}"];
+          configureFlags = ["--with-readline=${readline.dev}"];
           buildInputs = [ readline ];
         };
 
         sqlite = {
-          configureFlags = ["--with-pdo-sqlite=${sqlite}"];
+          configureFlags = ["--with-pdo-sqlite=${sqlite.dev}"];
           buildInputs = [ sqlite ];
         };
 
@@ -127,15 +133,15 @@ let
           # FIXME: Our own gd package doesn't work, see https://bugs.php.net/bug.php?id=60108.
           configureFlags = [
             "--with-gd"
-            "--with-freetype-dir=${freetype}"
-            "--with-png-dir=${libpng}"
-            "--with-jpeg-dir=${libjpeg}"
+            "--with-freetype-dir=${freetype.dev}"
+            "--with-png-dir=${libpng.dev}"
+            "--with-jpeg-dir=${libjpeg.dev}"
           ];
           buildInputs = [ libpng libjpeg freetype ];
         };
 
         gmp = {
-          configureFlags = ["--with-gmp=${gmp}"];
+          configureFlags = ["--with-gmp=${gmp.dev}"];
           buildInputs = [ gmp ];
         };
 
@@ -148,8 +154,8 @@ let
         };
 
         openssl = {
-          configureFlags = ["--with-openssl=${openssl}"];
-          buildInputs = [openssl];
+          configureFlags = ["--with-openssl"];
+          buildInputs = [openssl openssl.dev];
         };
 
         mbstring = {
@@ -171,7 +177,7 @@ let
         };
 
         xsl = {
-          configureFlags = ["--with-xsl=${libxslt}"];
+          configureFlags = ["--with-xsl=${libxslt.dev}"];
           buildInputs = [libxslt];
         };
 
@@ -181,7 +187,7 @@ let
         };
 
         bz2 = {
-          configureFlags = ["--with-bz2=${bzip2}"];
+          configureFlags = ["--with-bz2=${bzip2.dev}"];
           buildInputs = [bzip2];
         };
 
@@ -259,14 +265,12 @@ let
             --replace '@PHP_LDFLAGS@' ""
         done
 
-        iniFile=$out/etc/php-recommended.ini
         [[ -z "$libxml2" ]] || export PATH=$PATH:$libxml2/bin
         ./configure --with-config-file-scan-dir=/etc --with-config-file-path=$out/etc --prefix=$out $configureFlags
       '';
 
-      installPhase = ''
-        unset installPhase; installPhase;
-        cp php.ini-production $iniFile
+      postInstall = ''
+        cp php.ini-production $out/etc/php.ini
       '';
 
       src = fetchurl {
@@ -288,18 +292,18 @@ let
 in {
 
   php55 = generic {
-    version = "5.5.32";
-    sha256 = "1vljdvyqsq0vas4yhvpqycqyxl2gfndbmak6cfgxn1cfvc4c3wmh";
+    version = "5.5.36";
+    sha256 = "1fvipg3p8m61kym2ir589vi1l6zm0r95rd97z5s6sq6ylgxfv114";
   };
 
   php56 = generic {
-    version = "5.6.18";
-    sha256 = "1vgl2zjq6ws5cjjb3llhwpfwg9gasq3q84ibdv9hj8snm4llmkf3";
+    version = "5.6.21";
+    sha256 = "144m8xzpqv3pimxh2pjhbk4fy1kch9afkzclcinzv2dnfjspmvdl";
   };
 
   php70 = generic {
-    version = "7.0.2";
-    sha256 = "0di2vallv5kry85l67za25nq4f2hjr8fad5j0c06nb69v7xpa6wv";
+    version = "7.0.7";
+    sha256 = "06ixiaqqndvancqy5xmnzpscd77z2ixv3yrsdq0r8avqqhjjjks7";
   };
 
 }

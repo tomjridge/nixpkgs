@@ -1,5 +1,5 @@
 { stdenv, fetchurl, gfortran, readline, ncurses, perl, flex, texinfo, qhull
-, libX11, graphicsmagick, pcre, pkgconfig, mesa, fltk
+, libsndfile, libX11, graphicsmagick, pcre, pkgconfig, mesa, fltk
 , fftw, fftwSinglePrec, zlib, curl, qrupdate, openblas
 , qt ? null, qscintilla ? null, ghostscript ? null, llvm ? null, hdf5 ? null,glpk ? null
 , suitesparse ? null, gnuplot ? null, jdk ? null, python ? null
@@ -18,15 +18,15 @@ let
 in
 
 stdenv.mkDerivation rec {
-  version = "4.0.0";
+  version = "4.0.1";
   name = "octave-${version}";
   src = fetchurl {
     url = "mirror://gnu/octave/${name}.tar.xz";
-    sha256 = "0x64b2lna4vrlm4wwx6h1qdlmki6s2b9q90yjxldlvvrqvxf4syg";
+    sha256 = "11y2w6jgngj4rxiy136mkcs02l52rxk60kapyfc4rgrxz5hli3ym";
   };
 
   buildInputs = [ gfortran readline ncurses perl flex texinfo qhull libX11
-    graphicsmagick pcre pkgconfig mesa fltk zlib curl openblas
+    graphicsmagick pcre pkgconfig mesa fltk zlib curl openblas libsndfile
     fftw fftwSinglePrec qrupdate ]
     ++ (stdenv.lib.optional (qt != null) qt)
     ++ (stdenv.lib.optional (qscintilla != null) qscintilla)
@@ -40,11 +40,9 @@ stdenv.mkDerivation rec {
     ++ (stdenv.lib.optional (python != null) python)
     ;
 
-  # there is a mysterious sh: command not found
-  doCheck = false;
+  doCheck = true;
 
-  # problems on Hydra
-  enableParallelBuilding = false;
+  enableParallelBuilding = true;
 
   configureFlags =
     [ "--enable-readline"

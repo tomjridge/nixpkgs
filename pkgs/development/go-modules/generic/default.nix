@@ -30,7 +30,7 @@ if disabled then throw "${name} not supported for go ${go.meta.branch}" else
 let
   args = lib.filterAttrs (name: _: name != "extraSrcs") args';
 
-  removeReferences = [ go ];
+  removeReferences = [ ] ++ lib.optional (!allowGoReference) go;
 
   removeExpr = refs: lib.flip lib.concatMapStrings refs (ref: ''
     | sed "s,${ref},$(echo "${ref}" | sed "s,$NIX_STORE/[^-]*,$NIX_STORE/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,"),g" \
@@ -106,7 +106,7 @@ go.stdenv.mkDerivation (
         echo "$subPackages" | sed "s,\(^\| \),\1$goPackagePath/,g"
       else
         pushd go/src >/dev/null
-        find "$goPackagePath" -type f -name \*$type.go -exec dirname {} \; | sort | uniq
+        find "$goPackagePath" -type f -name \*$type.go -exec dirname {} \; | grep -v "/vendor/" | sort | uniq
         popd >/dev/null
       fi
     }
@@ -163,7 +163,7 @@ go.stdenv.mkDerivation (
   enableParallelBuilding = enableParallelBuilding;
 
   # I prefer to call this dev but propagatedBuildInputs expects $out to exist
-  outputs = [ "out" "bin" ];
+  outputs = args.outputs or [ "out" "bin" ];
 
   meta = {
     # Add default meta information

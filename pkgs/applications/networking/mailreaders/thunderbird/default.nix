@@ -6,27 +6,25 @@
 , cairo, gstreamer, gst_plugins_base, icu
 , debugBuild ? false
 , # If you want the resulting program to call itself "Thunderbird"
-  # instead of "Shredder", enable this option.  However, those
+  # instead of "Earlybird", enable this option.  However, those
   # binaries may not be distributed without permission from the
   # Mozilla Foundation, see
   # http://www.mozilla.org/foundation/trademarks/.
   enableOfficialBranding ? false
 }:
 
-let version = "38.6.0"; in
+let version = "45.1.0"; in
 let verName = "${version}"; in
 
 stdenv.mkDerivation rec {
   name = "thunderbird-${verName}";
 
   src = fetchurl {
-    url = "http://archive.mozilla.org/pub/thunderbird/releases/${verName}/source/thunderbird-${verName}.source.tar.bz2";
-
-    # https://archive.mozilla.org/pub/thunderbird/releases/${verName}/SHA1SUMS
-    sha1 = "7c8ef066d6b6516fddbb654b38353f894f85d469";
+    url = "mirror://mozilla/thunderbird/releases/${verName}/source/thunderbird-${verName}.source.tar.xz";
+    sha256 = "0293cwnqj4ys629ra87577c7snv4p8x2nbs1kzcnjpc96vjypsca";
   };
 
-  buildInputs = # from firefox30Pkgs.xulrunner, but without gstreamer and libvpx
+  buildInputs = # from firefox30Pkgs.xulrunner, without gstreamer and libvpx
     [ pkgconfig which libpng gtk perl zip libIDL libjpeg zlib bzip2
       python dbus dbus_glib pango freetype fontconfig xorg.libXi
       xorg.libX11 xorg.libXrender xorg.libXft xorg.libXt file
@@ -53,6 +51,7 @@ stdenv.mkDerivation rec {
       "--enable-system-pixman"
       "--enable-system-sqlite"
       "--enable-system-cairo"
+      "--disable-gconf"
       "--disable-gstreamer"
       "--enable-startup-notification"
       # "--enable-content-sandbox"            # available since 26.0, but not much info available
@@ -69,7 +68,7 @@ stdenv.mkDerivation rec {
                                "--enable-optimize" "--enable-strip" ])
     ++ [
       "--disable-javaxpcom"
-      "--enable-stdcxx-compat" # Avoid dependency on libstdc++ 4.7
+      #"--enable-stdcxx-compat" # Avoid dependency on libstdc++ 4.7
     ]
     ++ stdenv.lib.optional enableOfficialBranding "--enable-official-branding";
   in ''
@@ -91,6 +90,7 @@ stdenv.mkDerivation rec {
   '';
 
   enableParallelBuilding = true;
+  requiredSystemFeatures = [ "big-parallel" ];
 
   buildPhase =  "../mozilla/mach build";
 

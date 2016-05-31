@@ -17,13 +17,13 @@ assert buildKernel -> kernel != null;
 stdenv.mkDerivation rec {
   name = "spl-${configFile}-${version}${optionalString buildKernel "-${kernel.version}"}";
 
-  version = "0.6.5.4";
+  version = "0.6.5.7";
 
   src = fetchFromGitHub {
     owner = "zfsonlinux";
     repo = "spl";
     rev = "spl-${version}";
-    sha256 = "0k80xvl15ahbs0mylfl2bd5widxhngpf7dl6zq46s21wk0795jl4";
+    sha256 = "0i9ak4wqn444i6362xq5xl0msvcck8qqypp0fynrxq8mddzypwps";
   };
 
   patches = [ ./const.patch ./install_prefix.patch ];
@@ -62,5 +62,6 @@ stdenv.mkDerivation rec {
     platforms = platforms.linux;
     license = licenses.gpl2Plus;
     maintainers = with maintainers; [ jcumming wizeman wkennington ];
+    broken = (kernel.features.grsecurity or false);
   };
 }

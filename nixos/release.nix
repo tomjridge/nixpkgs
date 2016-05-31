@@ -43,34 +43,14 @@ let
 
 
   makeIso =
-    { module, type, description ? type, maintainers ? ["eelco"], system }:
+    { module, type, maintainers ? ["eelco"], system }:
 
     with import nixpkgs { inherit system; };
 
-    let
-
-      config = (import lib/eval-config.nix {
-        inherit system;
-        modules = [ module versionModule { isoImage.isoBaseName = "nixos-${type}"; } ];
-      }).config;
-
-      iso = config.system.build.isoImage;
-
-    in
-      # Declare the ISO as a build product so that it shows up in Hydra.
-      hydraJob (runCommand "nixos-iso-${config.system.nixosVersion}"
-        { meta = {
-            description = "NixOS installation CD (${description}) - ISO image for ${system}";
-            maintainers = map (x: lib.maintainers.${x}) maintainers;
-          };
-          inherit iso;
-          passthru = { inherit config; };
-          preferLocalBuild = true;
-        }
-        ''
-          mkdir -p $out/nix-support
-          echo "file iso" $iso/iso/*.iso* >> $out/nix-support/hydra-build-products
-        ''); # */
+    hydraJob ((import lib/eval-config.nix {
+      inherit system;
+      modules = [ module versionModule { isoImage.isoBaseName = "nixos-${type}"; } ];
+    }).config.system.build.isoImage);
 
 
   makeSystemTarball =
@@ -123,6 +103,19 @@ in rec {
   # Build the initial ramdisk so Hydra can keep track of its size over time.
   initialRamdisk = buildFromConfig ({ pkgs, ... }: { }) (config: config.system.build.initialRamdisk);
 
+  netboot.x86_64-linux = let build = (import lib/eval-config.nix {
+      system = "x86_64-linux";
+      modules = [
+        ./modules/installer/netboot/netboot-minimal.nix
+        versionModule
+      ];
+    }).config.system.build;
+  in
+    pkgs.symlinkJoin {name="netboot"; paths=[
+      build.netbootRamdisk
+      build.kernel
+      build.netbootIpxeScript
+    ];};
 
   iso_minimal = forAllSystems (system: makeIso {
     module = ./modules/installer/cd-dvd/installation-cd-minimal.nix;
@@ -130,7 +123,7 @@ in rec {
     inherit system;
   });
 
-  iso_graphical = forAllSystems (system: makeIso {
+  iso_graphical = genAttrs [ "x86_64-linux" ] (system: makeIso {
     module = ./modules/installer/cd-dvd/installation-cd-graphical-kde.nix;
     type = "graphical";
     inherit system;
@@ -138,7 +131,7 @@ in rec {
 
   # A variant with a more recent (but possibly less stable) kernel
   # that might support more hardware.
-  iso_minimal_new_kernel = forAllSystems (system: makeIso {
+  iso_minimal_new_kernel = genAttrs [ "x86_64-linux" ] (system: makeIso {
     module = ./modules/installer/cd-dvd/installation-cd-minimal-new-kernel.nix;
     type = "minimal-new-kernel";
     inherit system;
@@ -146,35 +139,17 @@ in rec {
 
 
   # A bootable VirtualBox virtual appliance as an OVA file (i.e. packaged OVF).
-  ova = forAllSystems (system:
+  ova = genAttrs [ "x86_64-linux" ] (system:
 
     with import nixpkgs { inherit system; };
 
-    let
-
-      config = (import lib/eval-config.nix {
-        inherit system;
-        modules =
-          [ versionModule
-            ./modules/installer/virtualbox-demo.nix
-          ];
-      }).config;
-
-    in
-      # Declare the OVA as a build product so that it shows up in Hydra.
-      hydraJob (runCommand "nixos-ova-${config.system.nixosVersion}-${system}"
-        { meta = {
-            description = "NixOS VirtualBox appliance (${system})";
-            maintainers = maintainers.eelco;
-          };
-          ova = config.system.build.virtualBoxOVA;
-          preferLocalBuild = true;
-        }
-        ''
-          mkdir -p $out/nix-support
-          fn=$(echo $ova/*.ova)
-          echo "file ova $fn" >> $out/nix-support/hydra-build-products
-        '') # */
+    hydraJob ((import lib/eval-config.nix {
+      inherit system;
+      modules =
+        [ versionModule
+          ./modules/installer/virtualbox-demo.nix
+        ];
+    }).config.system.build.virtualBoxOVA)
 
   );
 
@@ -234,12 +209,17 @@ in rec {
   tests.bittorrent = callTest tests/bittorrent.nix {};
   tests.blivet = callTest tests/blivet.nix {};
   tests.boot = callSubTests tests/boot.nix {};
+  tests.boot-stage1 = callTest tests/boot-stage1.nix {};
   tests.cadvisor = hydraJob (import tests/cadvisor.nix { system = "x86_64-linux"; });
-  tests.chromium = callSubTests tests/chromium.nix {};
+  tests.chromium = (callSubTests tests/chromium.nix { system = "x86_64-linux"; }).stable;
   tests.cjdns = callTest tests/cjdns.nix {};
-  tests.containers = callTest tests/containers.nix {};
+  tests.containers-ipv4 = callTest tests/containers-ipv4.nix {};
+  tests.containers-ipv6 = callTest tests/containers-ipv6.nix {};
+  tests.containers-bridge = callTest tests/containers-bridge.nix {};
+  tests.containers-imperative = callTest tests/containers-imperative.nix {};
   tests.docker = hydraJob (import tests/docker.nix { system = "x86_64-linux"; });
   tests.dockerRegistry = hydraJob (import tests/docker-registry.nix { system = "x86_64-linux"; });
+  tests.dnscrypt-proxy = callTest tests/dnscrypt-proxy.nix { system = "x86_64-linux"; };
   tests.etcd = hydraJob (import tests/etcd.nix { system = "x86_64-linux"; });
   tests.ec2-nixops = hydraJob (import tests/ec2.nix { system = "x86_64-linux"; }).boot-ec2-nixops;
   tests.ec2-config = hydraJob (import tests/ec2.nix { system = "x86_64-linux"; }).boot-ec2-config;
@@ -256,6 +236,7 @@ in rec {
   tests.ipv6 = callTest tests/ipv6.nix {};
   tests.jenkins = callTest tests/jenkins.nix {};
   tests.kde4 = callTest tests/kde4.nix {};
+  tests.keymap = callSubTests tests/keymap.nix {};
   tests.initrdNetwork = callTest tests/initrd-network.nix {};
   tests.kubernetes = hydraJob (import tests/kubernetes.nix { system = "x86_64-linux"; });
   tests.latestKernel.login = callTest tests/login.nix { latestKernel = true; };
@@ -289,6 +270,7 @@ in rec {
   tests.sddm = callTest tests/sddm.nix {};
   tests.sddm-kde5 = callTest tests/sddm-kde5.nix {};
   tests.simple = callTest tests/simple.nix {};
+  tests.taskserver = callTest tests/taskserver.nix {};
   tests.tomcat = callTest tests/tomcat.nix {};
   tests.udisks2 = callTest tests/udisks2.nix {};
   tests.virtualbox = callSubTests tests/virtualbox.nix { system = "x86_64-linux"; };

@@ -6,13 +6,12 @@
 , libfakeXinerama
 , lz4 }:
 
-buildPythonPackage rec {
-  name = "xpra-0.15.4";
+buildPythonApplication rec {
+  name = "xpra-0.17.0";
   namePrefix = "";
-
   src = fetchurl {
-    url = "https://www.xpra.org/src/${name}.tar.xz";
-    sha256 = "29be80b8987dd131058aab0a1c8d456a7ac67ad56c54d2b5e72472ff003799a2";
+    url = "http://xpra.org/src/${name}.tar.xz";
+    sha256 = "0abli2gc174v8zh1dsc3nq8c5aivnni67cjrr8yhsqsl8fwj0c2l";
   };
 
   buildInputs = [
@@ -38,7 +37,7 @@ buildPythonPackage rec {
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE $(pkg-config --cflags gtk+-2.0) $(pkg-config --cflags pygtk-2.0) $(pkg-config --cflags xtst)"
   '';
-  setupPyBuildFlags = ["--with-Xdummy"];
+  setupPyBuildFlags = ["--with-Xdummy" "--without-strict"];
 
   preInstall = ''
     # see https://bitbucket.org/pypa/setuptools/issue/130/install_data-doesnt-respect-prefix
@@ -51,15 +50,16 @@ buildPythonPackage rec {
       --set XKB_BINDIR "${xkbcomp}/bin" \
       --set FONTCONFIG_FILE "${fontsConf}" \
       --prefix LD_LIBRARY_PATH : ${libfakeXinerama}/lib \
-      --prefix PATH : ${getopt}/bin:${xorgserver}/bin:${xauth}/bin:${which}/bin:${utillinux}/bin \
-      --prefix PYTHONPATH : "$PYTHONPATH"
+      --prefix PATH : ${getopt}/bin:${xorgserver.out}/bin:${xauth}/bin:${which}/bin:${utillinux}/bin
   '';
+
+  preCheck = "exit 0";
 
   #TODO: replace postInstall with postFixup to avoid double wrapping of xpra; needs more work though
   #postFixup = ''
   #  sed -i '2iexport XKB_BINDIR="${xkbcomp}/bin"' $out/bin/xpra
   #  sed -i '3iexport FONTCONFIG_FILE="${fontsConf}"' $out/bin/xpra
-  #  sed -i '4iexport PATH=${getopt}/bin:${xorgserver}/bin:${xauth}/bin:${which}/bin:${utillinux}/bin\${PATH:+:}\$PATH' $out/bin/xpra
+  #  sed -i '4iexport PATH=${getopt}/bin:${xorgserver.out}/bin:${xauth}/bin:${which}/bin:${utillinux}/bin\${PATH:+:}\$PATH' $out/bin/xpra
   #'';
 
 

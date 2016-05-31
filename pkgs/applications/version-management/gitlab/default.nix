@@ -1,4 +1,4 @@
-{ stdenv, lib, bundler, fetchFromGitHub, bundlerEnv, defaultGemConfig, libiconv, ruby
+{ stdenv, lib, bundler, fetchFromGitHub, bundlerEnv, libiconv, ruby
 , tzdata, git, nodejs, procps
 }:
 
@@ -24,7 +24,7 @@ in
 
 stdenv.mkDerivation rec {
   name = "gitlab-${version}";
-  version = "8.5.1";
+  version = "8.5.12";
 
   buildInputs = [ ruby bundler tzdata git nodejs procps ];
 
@@ -32,7 +32,7 @@ stdenv.mkDerivation rec {
     owner = "gitlabhq";
     repo = "gitlabhq";
     rev = "v${version}";
-    sha256 = "1pn5r4axzjkgdjr59y3wgxsd2n83zfd5bry1g2w4c2qw0wcw7zqb";
+    sha256 = "144i97ywnr0xgm7gnwnwiy7kk5z1d71ccawl8qdhapz0705993l8";
   };
 
   patches = [

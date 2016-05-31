@@ -3,16 +3,18 @@
 assert interactive -> readline != null && ncurses != null;
 
 stdenv.mkDerivation {
-  name = "sqlite-3.9.2";
+  name = "sqlite-3.12.2";
 
   src = fetchurl {
-    url = "http://sqlite.org/2015/sqlite-autoconf-3090200.tar.gz";
-    sha1 = "dae1ae5297fece9671ae0c434a7ecd0cda09c76a";
+    url = "http://sqlite.org/2016/sqlite-autoconf-3120200.tar.gz";
+    sha1 = "b43c2e7238e54c50b95fbbd85c48792f4f39af8c";
   };
+
+  outputs = [ "dev" "out" "bin" ];
 
   buildInputs = lib.optionals interactive [ readline ncurses ];
 
-  configureFlags = [ "--enable-threadsafe" ];
+  configureFlags = [ "--enable-threadsafe" ] ++ lib.optional interactive "--enable-readline";
 
   NIX_CFLAGS_COMPILE = [
     "-DSQLITE_ENABLE_COLUMN_METADATA"

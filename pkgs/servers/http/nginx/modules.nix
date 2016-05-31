@@ -1,6 +1,16 @@
 { fetchFromGitHub, pkgs }:
 
 {
+  brotli = {
+    src = fetchFromGitHub {
+      owner = "google";
+      repo = "ngx_brotli";
+      rev = "788615eab7c5e0a984278113c55248305620df14";
+      sha256 = "02514bbjdhm9m38vljdh626d3c1783jxsxawv5c6bzblwmb8xgvf";
+    };
+    inputs = [ pkgs.libbrotli ];
+  };
+
   rtmp = {
     src = fetchFromGitHub {
       owner = "arut";
@@ -45,7 +55,7 @@
     src = "${pkgs.modsecurity_standalone.nginx}/nginx/modsecurity";
     inputs = [ pkgs.curl pkgs.apr pkgs.aprutil pkgs.apacheHttpd pkgs.yajl ];
     preConfigure = ''
-      export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -I${pkgs.aprutil}/include/apr-1 -I${pkgs.apacheHttpd}/include -I${pkgs.apr}/include/apr-1 -I${pkgs.yajl}/include"
+      export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -I${pkgs.aprutil.dev}/include/apr-1 -I${pkgs.apacheHttpd.dev}/include -I${pkgs.apr.dev}/include/apr-1 -I${pkgs.yajl}/include"
     '';
   };
 

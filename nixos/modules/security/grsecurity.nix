@@ -26,19 +26,11 @@ in
         '';
       };
 
-      stable = mkOption {
-        type = types.bool;
-        default = false;
+      kernelPatch = mkOption {
+        type = types.attrs;
+        example = lib.literalExample "pkgs.kernelPatches.grsecurity_4_1";
         description = ''
-          Enable the stable grsecurity patch, based on Linux 3.14.
-        '';
-      };
-
-      testing = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Enable the testing grsecurity patch, based on Linux 4.0.
+          Grsecurity patch to use.
         '';
       };
 
@@ -134,6 +126,19 @@ in
           '';
         };
 
+        denyChrootCaps = mkOption {
+          type = types.bool;
+          default = false;
+          description = ''
+            Whether to lower capabilities of all processes within a chroot,
+            preventing commands that require <literal>CAP_SYS_ADMIN</literal>.
+
+            This protection is disabled by default because it breaks
+            <literal>nixos-rebuild</literal>. Whenever possible, it is
+            highly recommended to enable this protection.
+          '';
+        };
+
         denyUSB = mkOption {
           type = types.bool;
           default = false;
@@ -202,6 +207,23 @@ in
           '';
         };
 
+        disableSimultConnect = mkOption {
+          type = types.bool;
+          default = false;
+          description = ''
+            Disable TCP simultaneous connect.  The TCP simultaneous connect
+            feature allows two clients to connect without either of them
+            entering the listening state.  This feature of the TCP specification
+            is claimed to enable an attacker to deny the target access to a given
+            server by guessing the source port the target would use to make the
+            connection.
+
+            This option is OFF by default because TCP simultaneous connect has
+            some legitimate uses.  Enable this option if you know what this TCP
+            feature is for and know that you do not need it.
+          '';
+        };
+
         verboseVersion = mkOption {
           type = types.bool;
           default = false;
@@ -219,16 +241,7 @@ in
 
   config = mkIf cfg.enable {
     assertions =
-      [ { assertion = cfg.stable || cfg.testing;
-          message   = ''
-            If grsecurity is enabled, you must select either the
-            stable patch (with kernel 3.14), or the testing patch (with
-            kernel 4.0) to continue.
-          '';
-        }
-        { assertion = !(cfg.stable && cfg.testing);
-          message   = "Select either one of the stable or testing patch";
-        }
+      [
         { assertion = (cfg.config.restrictProc -> !cfg.config.restrictProcWithGroup) ||
                       (cfg.config.restrictProcWithGroup -> !cfg.config.restrictProc);
           message   = "You cannot enable both restrictProc and restrictProcWithGroup";
@@ -247,9 +260,12 @@ in
         }
       ];
 
+    security.grsecurity.kernelPatch = lib.mkDefault pkgs.kernelPatches.grsecurity_latest;
+
     systemd.services.grsec-lock = mkIf cfg.config.sysctl {
       description     = "grsecurity sysctl-lock Service";
-      requires        = [ "systemd-sysctl.service" ];
+      wants           = [ "systemd-sysctl.service" ];
+      after           = [ "systemd-sysctl.service" ];
       wantedBy        = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
       serviceConfig.RemainAfterExit = "yes";

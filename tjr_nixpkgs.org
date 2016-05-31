@@ -600,3 +600,6 @@ merge upstream/master; clash in xpra
 
   - nix-build -A eclipses.eclipse_scala_sdk_43
   - nix-env -i ./result
+* 2016-04-13 curl CA_BUNDLE
+
+export CURL_CA_BUNDLE=$HOME/.nix-profile/etc/ca-bundle.crt

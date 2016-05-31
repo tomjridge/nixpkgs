@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, scons, boost, gperftools, pcre, snappy
+{ stdenv, fetchurl, fetchpatch, scons, boost, gperftools, pcre-cpp, snappy
 , zlib, libyamlcpp, sasl, openssl, libpcap, wiredtiger
 }:
 
@@ -20,7 +20,7 @@ let version = "3.2.1";
       "yaml"
     ] ++ optionals stdenv.isLinux [ "tcmalloc" ];
     buildInputs = [
-      sasl boost gperftools pcre snappy
+      sasl boost gperftools pcre-cpp snappy
       zlib libyamlcpp sasl openssl libpcap
     ]; # ++ optional stdenv.is64bit wiredtiger;
 
@@ -49,11 +49,24 @@ in stdenv.mkDerivation rec {
   nativeBuildInputs = [ scons ];
   inherit buildInputs;
 
-  # When not building with the system valgrind, the build should use the
-  # vendored header file - regardless of whether or not we're using the system
-  # tcmalloc - so we need to lift the include path manipulation out of the
-  # conditional.
-  patches = [ ./valgrind-include.patch ];
+  patches =
+    [
+      # When not building with the system valgrind, the build should use the
+      # vendored header file - regardless of whether or not we're using the system
+      # tcmalloc - so we need to lift the include path manipulation out of the
+      # conditional.
+      ./valgrind-include.patch
+
+      # MongoDB keeps track of its build parameters, which tricks nix into
+      # keeping dependencies to build inputs in the final output.
+      # We remove the build flags from buildInfo data.
+      ./forget-build-dependencies.patch
+      (fetchpatch {
+        url = https://projects.archlinux.org/svntogit/community.git/plain/trunk/boost160.patch?h=packages/mongodb;
+        name = "boost160.patch";
+        sha256 = "0bvsf3499zj55pzamwjmsssr6x63w434944w76273fr5rxwzcmh8";
+      })
+    ];
 
   postPatch = ''
     # fix environment variable reading

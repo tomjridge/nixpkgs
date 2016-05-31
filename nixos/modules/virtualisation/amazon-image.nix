@@ -32,15 +32,14 @@ let cfg = config.ec2; in
     # Generate a GRUB menu.  Amazon's pv-grub uses this to boot our kernel/initrd.
     boot.loader.grub.version = if cfg.hvm then 2 else 1;
     boot.loader.grub.device = if cfg.hvm then "/dev/xvda" else "nodev";
-    boot.loader.grub.timeout = 0;
     boot.loader.grub.extraPerEntryConfig = mkIf (!cfg.hvm) "root (hd0)";
+    boot.loader.timeout = 0;
 
     boot.initrd.postDeviceCommands =
       ''
         # Force udev to exit to prevent random "Device or resource busy
         # while trying to open /dev/xvda" errors from fsck.
         udevadm control --exit || true
-        kill -9 -1
       '';
 
     boot.initrd.network.enable = true;
@@ -66,8 +65,7 @@ let cfg = config.ec2; in
         fi
 
         if ! [ -e "$metaDir/user-data" ]; then
-          wget -q -O "$metaDir/user-data" http://169.254.169.254/1.0/user-data
-          chmod 600 "$metaDir/user-data"
+          wget -q -O "$metaDir/user-data" http://169.254.169.254/1.0/user-data && chmod 600 "$metaDir/user-data"
         fi
 
         if ! [ -e "$metaDir/hostname" ]; then

@@ -8,13 +8,13 @@ in {
 
   m3d-fio = buildPlugin rec {
     name = "M3D-Fio-${version}";
-    version = "0.27.1";
+    version = "0.32";
 
     src = fetchFromGitHub {
       owner = "donovan6000";
       repo = "M3D-Fio";
       rev = "V${version}";
-      sha256 = "0jfb417wgdq6fzpxwq6xrrlpkndjwq69h4cdm0ixbyqkp7a3kcm2";
+      sha256 = "1s15nx6v56yjwd88b19fx0gk1l0abp76nz10yicspdn91fpr1sf4";
     };
 
     patches = [
@@ -31,8 +31,8 @@ in {
     '';
 
     meta = with stdenv.lib; {
-      homepage = https://github.com/donovan6000/M3D-Fio;
-      description = " OctoPrint plugin for the Micro 3D printer";
+      homepage = "https://github.com/donovan6000/M3D-Fio";
+      description = "OctoPrint plugin for the Micro 3D printer";
       platforms = platforms.all;
       license = licenses.gpl3;
       maintainers = with maintainers; [ abbradar ];

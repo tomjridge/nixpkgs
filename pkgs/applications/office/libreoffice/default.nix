@@ -12,17 +12,19 @@
 , libatomic_ops, graphite2, harfbuzz, libodfgen
 , librevenge, libe-book, libmwaw, glm, glew, gst_all_1
 , gdb, commonsLogging, librdf_rasqal, makeWrapper, gsettings_desktop_schemas
-, defaultIconTheme, glib
+, defaultIconTheme, glib, ncurses
 , langs ? [ "en-US" "en-GB" "ca" "ru" "eo" "fr" "nl" "de" "sl" "pl" ]
 , withHelp ? true
+, kdeIntegration ? false
 }:
 
 let
-  langsSpaces = stdenv.lib.concatStringsSep " " langs;
+  lib = stdenv.lib;
+  langsSpaces = lib.concatStringsSep " " langs;
   major = "5";
   minor = "1";
-  patch = "0";
-  tweak = "3";
+  patch = "3";
+  tweak = "2";
   subdir = "${major}.${minor}.${patch}";
   version = "${subdir}${if tweak == "" then "" else "."}${tweak}";
 
@@ -48,14 +50,14 @@ let
 
     translations = fetchSrc {
       name = "translations";
-      sha256 = "1qqffq7646yh7rskzd1wvy0zgkdnkpdbyhvsny424lxqjglyw3px";
+      sha256 = "039gjg4295x9f3hj0bh32csp63gbfns1sj7wk5mv51szdz50a8zi";
     };
 
     # TODO: dictionaries
 
     help = fetchSrc {
       name = "help";
-      sha256 = "0ixlq6yzn6z8hsih24l934sa05vvz2vk3p03nalpqqrhm7vdzsf2";
+      sha256 = "0fq9wqzvbs6x003ljvhwbnq7vglzcq3yylndv0kp1mj00dkyz3gm";
     };
 
   };
@@ -64,7 +66,7 @@ in stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "http://download.documentfoundation.org/libreoffice/src/${subdir}/libreoffice-${version}.tar.xz";
-    sha256 = "1csphxpbpc7bxrwnl5i9nvm3bh3p0j7r3h9ivsdl7cys13q066xl";
+    sha256 = "1i077hz24kz1wmnvw9xicmm1mrr9msdxq4lg3y0hy47ar6kiqnnd";
   };
 
   # Openoffice will open libcups dynamically, so we link it directly
@@ -90,7 +92,6 @@ in stdenv.mkDerivation rec {
   '';
 
   QT4DIR = qt4;
-  KDE4DIR = kde4.kdelibs;
 
   # Fix boost 1.59 compat
   # Try removing in the next version
@@ -171,14 +172,14 @@ in stdenv.mkDerivation rec {
   configureFlags = [
     "${if withHelp then "" else "--without-help"}"
     "--with-boost=${boost.dev}"
-    "--with-boost-libdir=${boost.lib}/lib"
+    "--with-boost-libdir=${boost.out}/lib"
     "--with-beanshell-jar=${bsh}"
     "--with-vendor=NixOS"
     "--with-commons-logging-jar=${commonsLogging}/share/java/commons-logging-1.2.jar"
     "--disable-report-builder"
     "--enable-python=system"
     "--enable-dbus"
-    "--enable-kde4"
+    (lib.enableFeature kdeIntegration "kde4")
     "--with-package-format=installed"
     "--enable-epm"
     "--with-jdk-home=${jdk.home}"
@@ -230,7 +231,7 @@ in stdenv.mkDerivation rec {
     [ ant ArchiveZip autoconf automake bison boost cairo clucene_core
       CompressZlib cppunit cups curl db dbus_glib expat file flex fontconfig
       freetype GConf getopt gnome_vfs gperf gtk3 gtk
-      hunspell icu jdk kde4.kdelibs lcms libcdr libexttextcat unixODBC libjpeg
+      hunspell icu jdk lcms libcdr libexttextcat unixODBC libjpeg
       libmspack librdf_redland librsvg libsndfile libvisio libwpd libwpg libX11
       libXaw libXext libXi libXinerama libxml2 libxslt libXtst
       libXdmcp libpthreadstubs mesa mythes gst_all_1.gstreamer
@@ -239,11 +240,12 @@ in stdenv.mkDerivation rec {
       python3 sablotron sane-backends tcsh unzip vigra which zip zlib
       mdds bluez5 glibc libcmis libwps libabw
       libxshmfence libatomic_ops graphite2 harfbuzz
-      librevenge libe-book libmwaw glm glew
+      librevenge libe-book libmwaw glm glew ncurses
       libodfgen CoinMP librdf_rasqal defaultIconTheme makeWrapper
-    ];
+    ]
+    ++ lib.optional kdeIntegration kde4.kdelibs;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Comprehensive, professional-quality productivity suite, a variant of openoffice.org";
     homepage = http://libreoffice.org/;
     license = licenses.lgpl3;

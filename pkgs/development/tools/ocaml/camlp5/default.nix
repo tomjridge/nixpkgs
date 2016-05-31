@@ -7,11 +7,11 @@ in
 
 stdenv.mkDerivation {
 
-  name = "camlp5${if transitional then "_transitional" else ""}-6.14";
+  name = "camlp5${if transitional then "_transitional" else ""}-6.16";
 
   src = fetchurl {
-    url = http://camlp5.gforge.inria.fr/distrib/src/camlp5-6.14.tgz;
-    sha256 = "1ql04iyvclpyy9805kpddc4ndjb5d0qg4shhi2fc6bixi49fvy89";
+    url = http://camlp5.gforge.inria.fr/distrib/src/camlp5-6.16.tgz;
+    sha256 = "1caqa2rl7rav7pfwv1l1j0j18yr1qzyyqz0wa9519x91ckznqi7x";
   };
 
   buildInputs = [ ocaml ];
@@ -33,7 +33,7 @@ stdenv.mkDerivation {
     '';
     homepage = http://pauillac.inria.fr/~ddr/camlp5/;
     license = licenses.bsd3;
-    platforms = ocaml.meta.platforms;
+    platforms = ocaml.meta.platforms or [];
     maintainers = with maintainers; [
       z77z vbgl
     ];

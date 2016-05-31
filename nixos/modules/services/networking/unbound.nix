@@ -106,14 +106,16 @@ in
       preStart = ''
         mkdir -m 0755 -p ${stateDir}/dev/
         cp ${confFile} ${stateDir}/unbound.conf
+        ${optionalString cfg.enableRootTrustAnchor ''
         ${pkgs.unbound}/bin/unbound-anchor -a ${rootTrustAnchorFile}
         chown unbound ${stateDir} ${rootTrustAnchorFile}
+        ''}
         touch ${stateDir}/dev/random
         ${pkgs.utillinux}/bin/mount --bind -n /dev/random ${stateDir}/dev/random
       '';
 
       serviceConfig = {
-        ExecStart = "${pkgs.unbound}/sbin/unbound -d -c ${stateDir}/unbound.conf";
+        ExecStart = "${pkgs.unbound}/bin/unbound -d -c ${stateDir}/unbound.conf";
         ExecStopPost="${pkgs.utillinux}/bin/umount ${stateDir}/dev/random";
       };
     };

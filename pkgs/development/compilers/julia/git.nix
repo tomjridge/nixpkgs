@@ -42,7 +42,7 @@ let
   
   virtualenvVersion = "1.11.6";
   virtualenv = fetchurl {
-    url = "https://pypi.python.org/packages/source/v/virtualenv/virtualenv-${virtualenvVersion}.tar.gz";
+    url = "mirror://pypi/v/virtualenv/virtualenv-${virtualenvVersion}.tar.gz";
     sha256 = "1xq4prmg25n9cz5zcvbqx68lmc3kl39by582vd8pzs9f3qalqyiy";
   };
 in
@@ -86,7 +86,7 @@ stdenv.mkDerivation rec {
   makeFlags =
     let
       arch = head (splitString "-" stdenv.system);
-      march = { "x86_64" = "x86-64"; "i686" = "i686"; }."${arch}"
+      march = { "x86_64" = "x86-64"; "i686" = "pentium4"; }."${arch}"
               or (throw "unsupported architecture: ${arch}");
       # Julia requires Pentium 4 (SSE2) or better
       cpuTarget = { "x86_64" = "x86-64"; "i686" = "pentium4"; }."${arch}"
@@ -130,7 +130,7 @@ stdenv.mkDerivation rec {
 
   NIX_CFLAGS_COMPILE = [ "-fPIC" ];
 
-  LD_LIBRARY_PATH = makeSearchPath "lib" [
+  LD_LIBRARY_PATH = makeLibraryPath [
     arpack fftw fftwSinglePrec gmp libgit2 mpfr openblas openlibm
     openspecfun pcre2 suitesparse
   ];
@@ -164,7 +164,7 @@ stdenv.mkDerivation rec {
     description = "High-level performance-oriented dynamical language for technical computing";
     homepage = "http://julialang.org/";
     license = stdenv.lib.licenses.mit;
-    maintainers = with stdenv.lib.maintainers; [ raskin ttuegel ];
+    maintainers = with stdenv.lib.maintainers; [ raskin ];
     platforms = [ "i686-linux" "x86_64-linux" "x86_64-darwin" ];
   };
 }

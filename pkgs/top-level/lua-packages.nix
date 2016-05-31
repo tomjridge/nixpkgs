@@ -103,7 +103,7 @@ let
       makeFlagsArray=(
         LUA_LDIR="$out/share/lua/${lua.luaversion}"
         LUA_INC="-I${lua}/include" LUA_CDIR="$out/lib/lua/${lua.luaversion}"
-        EXPAT_INC="-I${expat}/include");
+        EXPAT_INC="-I${expat.dev}/include");
     '';
 
     meta = {
@@ -271,7 +271,7 @@ let
     buildPhase = let
       luaVariable = "LUA_PATH=${luastdlib}/share/lua/${lua.luaversion}/?.lua";
 
-      pcreVariable = "PCRE_DIR=${pcre}";
+      pcreVariable = "PCRE_DIR=${pcre.dev}";
       onigVariable = "ONIG_DIR=${oniguruma}";
       gnuVariable = "GNU_INCDIR=${gnulib}/lib";
       treVariable = "TRE_DIR=${tre}";

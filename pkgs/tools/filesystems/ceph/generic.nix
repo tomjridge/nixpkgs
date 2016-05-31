@@ -1,4 +1,5 @@
-{ stdenv, autoconf, automake, makeWrapper, pkgconfig, libtool, which, git
+{ stdenv, ensureNewerSourcesHook, autoconf, automake, makeWrapper, pkgconfig
+, libtool, which, git
 , boost, python, pythonPackages, libxml2, zlib
 
 # Optional Dependencies
@@ -111,7 +112,10 @@ stdenv.mkDerivation {
     ./0001-Makefile-env-Don-t-force-sbin.patch
   ];
 
-  nativeBuildInputs = [ autoconf automake makeWrapper pkgconfig libtool which git ]
+  nativeBuildInputs = [
+    autoconf automake makeWrapper pkgconfig libtool which git
+    (ensureNewerSourcesHook { year = "1980"; })
+  ]
     ++ optionals (versionAtLeast version "9.0.2") [
       pythonPackages.setuptools pythonPackages.argparse
     ];
@@ -263,7 +267,7 @@ stdenv.mkDerivation {
 
     # Fix .la file link dependencies
     find "$lib/lib" -name \*.la | xargs sed -i \
-      -e 's,-lboost_[a-z]*,-L${boost.lib}/lib \0,g' \
+      -e 's,-lboost_[a-z]*,-L${boost.out}/lib \0,g' \
   '' + optionalString (cryptoStr == "cryptopp") ''
       -e 's,-lcryptopp,-L${optCryptopp}/lib \0,g' \
   '' + optionalString (cryptoStr == "nss") ''

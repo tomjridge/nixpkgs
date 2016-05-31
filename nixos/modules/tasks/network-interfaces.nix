@@ -523,7 +523,7 @@ in
 
     networking.bonds = mkOption {
       default = { };
-      example = {
+      example = literalExample {
         bond0 = {
           interfaces = [ "eth0" "wlan0" ];
           miimon = 100;
@@ -598,7 +598,7 @@ in
     networking.macvlans = mkOption {
       type = types.attrsOf types.optionSet;
       default = { };
-      example = {
+      example = literalExample {
         wan = {
           interface = "enp2s0";
           mode = "vepa";
@@ -629,7 +629,7 @@ in
     networking.sits = mkOption {
       type = types.attrsOf types.optionSet;
       default = { };
-      example = {
+      example = literalExample {
         hurricane = {
           remote = "10.0.0.1";
           local = "10.0.0.22";
@@ -688,7 +688,7 @@ in
 
     networking.vlans = mkOption {
       default = { };
-      example = {
+      example = literalExample {
         vlan0 = {
           id = 3;
           interface = "enp3s0";
@@ -727,7 +727,7 @@ in
 
     networking.wlanInterfaces = mkOption {
       default = { };
-      example = {
+      example = literalExample {
         "wlan-station0" = {
             device = "wlp6s0";
         };
@@ -882,10 +882,8 @@ in
       optionalString hasBonds "options bonding max_bonds=0";
 
     boot.kernel.sysctl = {
-      "net.net.ipv4.conf.all.promote_secondaries" = true;
       "net.ipv6.conf.all.disable_ipv6" = mkDefault (!cfg.enableIPv6);
       "net.ipv6.conf.default.disable_ipv6" = mkDefault (!cfg.enableIPv6);
-      "net.ipv4.conf.all_forwarding" = mkDefault (any (i: i.proxyARP) interfaces);
       "net.ipv6.conf.all.forwarding" = mkDefault (any (i: i.proxyARP) interfaces);
     } // listToAttrs (concatLists (flip map (filter (i: i.proxyARP) interfaces)
         (i: flip map [ "4" "6" ] (v: nameValuePair "net.ipv${v}.conf.${i.name}.proxy_arp" true))

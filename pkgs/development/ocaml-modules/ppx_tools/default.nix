@@ -1,10 +1,10 @@
 { stdenv, fetchzip, ocaml, findlib }:
 
 stdenv.mkDerivation {
-  name = "ocaml-ppx_tools-0.99.2";
+  name = "ocaml-ppx_tools-4.02.3";
   src = fetchzip {
-    url = https://github.com/alainfrisch/ppx_tools/archive/ppx_tools_0.99.2.tar.gz;
-    sha256 = "1m09r2sjcb37i4dyhpbk9n2wxkcvpib6bvairsird91fm9w0vqw7";
+    url = https://github.com/alainfrisch/ppx_tools/archive/v4.02.3.tar.gz;
+    sha256 = "0varkd93hgrarwwkrjp2yy735q7jqzba75sskyanmvkb576wpcxv";
   };
 
   buildInputs = [ ocaml findlib ];
@@ -15,7 +15,7 @@ stdenv.mkDerivation {
     description = "Tools for authors of ppx rewriters";
     homepage = http://www.lexifi.com/ppx_tools;
     license = licenses.mit;
-    platforms = ocaml.meta.platforms;
+    platforms = ocaml.meta.platforms or [];
     maintainers = with maintainers; [ vbgl ];
   };
 }
