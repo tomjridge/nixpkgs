@@ -603,3 +603,476 @@ merge upstream/master; clash in xpra
 * 2016-04-13 curl CA_BUNDLE
 
 export CURL_CA_BUNDLE=$HOME/.nix-profile/etc/ca-bundle.crt
+* 2016-06-01 new thunderbird, 45.0.1 buggy, no search
+* 2016-07-14 ci, failing sibylfs build
+
+fetching path ‘/nix/store/jzvdh3bxmcs3xjj20cfh964yy7h18k2h-ocaml-lwt-2.5.2’...
+
+*** Downloading ‘https://cache.nixos.org/nar/0y49b7ipl1dps8a0hyy1a738hb6jqmcwx9qdpf5nnmgxd4g5ymjy.nar.xz’ to ‘/nix/store/jzvdh3bxmcs3xjj20cfh964yy7h18k2h-ocaml-lwt-2.5.2’...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 2330k  100 2330k    0     0  1219k      0  0:00:01  0:00:01 --:--:-- 1225k
+
+building path(s) ‘/nix/store/77hcsyrhmr70dp720jdhxqfvzfcqyvlr-lem-5b4a168’
+exporting https://tomridge@bitbucket.org/tomridge/lem.git (rev 5b4a168) into /nix/store/77hcsyrhmr70dp720jdhxqfvzfcqyvlr-lem-5b4a168
+Initialized empty Git repository in /nix/store/77hcsyrhmr70dp720jdhxqfvzfcqyvlr-lem-5b4a168/.git/
+remote: Counting objects: 6710, done.        
+remote: Compressing objects: 100% (2623/2623), done.        
+remote: Total 6710 (delta 5226), reused 5239 (delta 4044)        
+Receiving objects: 100% (6710/6710), 7.12 MiB | 3.15 MiB/s, done.
+Resolving deltas: 100% (5226/5226), done.
+From https://bitbucket.org/tomridge/lem
+ * [new branch]      aspects    -> origin/aspects
+ * [new branch]      bug_fixes  -> origin/bug_fixes
+ * [new branch]      char-literals -> origin/char-literals
+ * [new branch]      fs         -> origin/fs
+ * [new branch]      inderl_change -> origin/inderl_change
+ * [new branch]      library-format -> origin/library-format
+ * [new branch]      library-work -> origin/library-work
+ * [new branch]      library-work2 -> origin/library-work2
+ * [new branch]      library-work3 -> origin/library-work3
+ * [new branch]      master     -> origin/master
+ * [new branch]      new-features -> origin/new-features
+ * [new branch]      numeral-literals -> origin/numeral-literals
+ * [new branch]      preprocessing -> origin/preprocessing
+ * [new branch]      thtuerk/lemmata -> origin/thtuerk/lemmata
+ * [new branch]      word-library -> origin/word-library
+ * [new tag]         v.2015-09-07 -> v.2015-09-07
+Switched to a new branch 'fetchgit'
+removing `.git'...
+output path ‘/nix/store/77hcsyrhmr70dp720jdhxqfvzfcqyvlr-lem-5b4a168’ has r:sha256 hash ‘19642yadi089p8si87n0rbn0mwwxyvzjrv33g848gaqy811i0zak’ when ‘0z1chfa2q4h7rdzabyjjh3zhgdafjhjhxyna5hd6q11ns88v7xds’ was expected
+cannot build derivation ‘/nix/store/swdk7jfn5qwr7bhl4f260acfgrdqy5zg-lem.drv’: 1 dependencies couldn't be built
+building path(s) ‘/nix/store/lj44gfa17j3bqw2r7q4gs7x5ggb5jf0q-ocaml-fd-send-recv-1.0.1.tar.gz’
+killing process 19763
+cannot build derivation ‘/nix/store/mxfwfpxzjldq9w8a1frkg03ariijy58r-fs_test.drv’: 1 dependencies couldn't be built
+error: build of ‘/nix/store/mxfwfpxzjldq9w8a1frkg03ariijy58r-fs_test.drv’ failed
+
+End
+
+
+
+https://github.com/NixOS/nixpkgs/pull/15469 - all the hashes changed
+
+
+nix-prefetch-url -A hello.src
+
+
+seems best to debug all these problems in the chroot; perhaps we can avoid hashes? no seems not
+
+we could just edit the files in the overlay; but then we would get clashes with our own nixstore; unless we can already pick up these problems
+
+we still pick up the old hash
+
+to get the new hash?
+
+we are using nix-pref-git
+chroot: /nix/store/r6mm3v1wglzhgbpy9vx9vzyd6856b807-nix-prefetch-git/bin/nix-prefetch-git
+pc1177: /nix/store/43ppx2dmjwq2p8k0x6px58yyy0sxpyrz-nix-prefetch-git/bin/nix-prefetch-git
+
+why the difference? need to show the dependencies 
+
+ tr61@pc1177:/tmp/l/github/sibylfs_src$ nix-store --query --tree /nix/store/43ppx2dmjwq2p8k0x6px58yyy0sxpyrz-nix-prefetch-git
+ /nix/store/43ppx2dmjwq2p8k0x6px58yyy0sxpyrz-nix-prefetch-git
+ +---/nix/store/95wmyhk0y60r09b98l6v4vswv5m7xm4q-coreutils-8.25
+ |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23
+ |   |   +---/nix/store/gygp4inn8w53wy161yy08ilf4kvzw0ki-linux-headers-3.18.14
+ |   |   |   +---/nix/store/gygp4inn8w53wy161yy08ilf4kvzw0ki-linux-headers-3.18.14 [...]
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   +---/nix/store/awaqxik06wjw6rmckqlgd4ng94vawic9-acl-2.2.52
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/ignans7cvzxg4mg3qrm4f4ckb0y1dri9-attr-2.4.47
+ |   |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   |   +---/nix/store/ignans7cvzxg4mg3qrm4f4ckb0y1dri9-attr-2.4.47 [...]
+ |   |   +---/nix/store/awaqxik06wjw6rmckqlgd4ng94vawic9-acl-2.2.52 [...]
+ |   +---/nix/store/95wmyhk0y60r09b98l6v4vswv5m7xm4q-coreutils-8.25 [...]
+ +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42
+ |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42 [...]
+ +---/nix/store/g9idnp7fzf06ir918wbhw6sz580i6gbw-nix-1.11.2
+ |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   +---/nix/store/0fm4p26lvg6cv97gs3z29y9qr990677q-gzip-1.6
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/0fm4p26lvg6cv97gs3z29y9qr990677q-gzip-1.6 [...]
+ |   +---/nix/store/95wmyhk0y60r09b98l6v4vswv5m7xm4q-coreutils-8.25 [...]
+ |   +---/nix/store/79mdd0cybnxl64dzfkyaixkp3viw7z06-perl-5.20.3
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/95wmyhk0y60r09b98l6v4vswv5m7xm4q-coreutils-8.25 [...]
+ |   |   +---/nix/store/79mdd0cybnxl64dzfkyaixkp3viw7z06-perl-5.20.3 [...]
+ |   +---/nix/store/9rz8gxhzf8sw4kf2j2f1grr49w8zx5vj-openssl-1.0.1r
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/9rz8gxhzf8sw4kf2j2f1grr49w8zx5vj-openssl-1.0.1r [...]
+ |   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42 [...]
+ |   +---/nix/store/8h6hvrqbhj9zjg83v59ah36j22ljbxh7-curl-7.47.1
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/9rz8gxhzf8sw4kf2j2f1grr49w8zx5vj-openssl-1.0.1r [...]
+ |   |   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42 [...]
+ |   |   +---/nix/store/izhhv6wnmbysga5n314sx5xqipdnp4c2-libnghttp2-1.7.1
+ |   |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   |   +---/nix/store/izhhv6wnmbysga5n314sx5xqipdnp4c2-libnghttp2-1.7.1 [...]
+ |   |   +---/nix/store/wwh7mhwh269sfjkm6k5665b5kgp7jrk2-zlib-1.2.8
+ |   |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   |   +---/nix/store/wwh7mhwh269sfjkm6k5665b5kgp7jrk2-zlib-1.2.8 [...]
+ |   |   +---/nix/store/zlq1bzf4ilbgp20jll6737m1y1n44d0i-libssh2-1.7.0
+ |   |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   |   +---/nix/store/9rz8gxhzf8sw4kf2j2f1grr49w8zx5vj-openssl-1.0.1r [...]
+ |   |   |   +---/nix/store/wwh7mhwh269sfjkm6k5665b5kgp7jrk2-zlib-1.2.8 [...]
+ |   |   |   +---/nix/store/zlq1bzf4ilbgp20jll6737m1y1n44d0i-libssh2-1.7.0 [...]
+ |   |   +---/nix/store/8h6hvrqbhj9zjg83v59ah36j22ljbxh7-curl-7.47.1 [...]
+ |   +---/nix/store/ay8cpbxz6xavpapx568c3dyj8spilzfp-gnutar-1.28
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/ay8cpbxz6xavpapx568c3dyj8spilzfp-gnutar-1.28 [...]
+ |   +---/nix/store/b8mlryrzy6707imcgdvv3fqqay6yprmx-perl-WWW-Curl-4.17
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/8h6hvrqbhj9zjg83v59ah36j22ljbxh7-curl-7.47.1 [...]
+ |   |   +---/nix/store/b8mlryrzy6707imcgdvv3fqqay6yprmx-perl-WWW-Curl-4.17 [...]
+ |   +---/nix/store/gjiakvrh8d8pvsagqqb42c6l7hc4gf9l-xz-5.2.2
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/gjiakvrh8d8pvsagqqb42c6l7hc4gf9l-xz-5.2.2 [...]
+ |   +---/nix/store/ikzdbd65z7453spdvm05r0izd56zdvkx-gcc-4.9.3
+ |   |   +---/nix/store/gygp4inn8w53wy161yy08ilf4kvzw0ki-linux-headers-3.18.14 [...]
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/wwh7mhwh269sfjkm6k5665b5kgp7jrk2-zlib-1.2.8 [...]
+ |   |   +---/nix/store/ikzdbd65z7453spdvm05r0izd56zdvkx-gcc-4.9.3 [...]
+ |   +---/nix/store/kak7rqric8p1b7v6q1ai0n03bw9y1v5j-sqlite-3.9.2
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/kak7rqric8p1b7v6q1ai0n03bw9y1v5j-sqlite-3.9.2 [...]
+ |   +---/nix/store/ngxxl0h2nksvp92czijdqn1gwcnw64bd-perl-DBI-1.634
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/79mdd0cybnxl64dzfkyaixkp3viw7z06-perl-5.20.3 [...]
+ |   |   +---/nix/store/ngxxl0h2nksvp92czijdqn1gwcnw64bd-perl-DBI-1.634 [...]
+ |   +---/nix/store/rkqlbbr2mpglbfsysf8m9igngyz9cl45-boehm-gc-7.2f
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/ikzdbd65z7453spdvm05r0izd56zdvkx-gcc-4.9.3 [...]
+ |   |   +---/nix/store/rkqlbbr2mpglbfsysf8m9igngyz9cl45-boehm-gc-7.2f [...]
+ |   +---/nix/store/rrjvbqna950sjwfaqqaqxqm0k7al15az-libsodium-1.0.8
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/ikzdbd65z7453spdvm05r0izd56zdvkx-gcc-4.9.3 [...]
+ |   |   +---/nix/store/rrjvbqna950sjwfaqqaqxqm0k7al15az-libsodium-1.0.8 [...]
+ |   +---/nix/store/wdbwdwjhmr5451cli44yvrs3grwwz84g-perl-DBD-SQLite-1.48
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/kak7rqric8p1b7v6q1ai0n03bw9y1v5j-sqlite-3.9.2 [...]
+ |   |   +---/nix/store/ngxxl0h2nksvp92czijdqn1gwcnw64bd-perl-DBI-1.634 [...]
+ |   |   +---/nix/store/wdbwdwjhmr5451cli44yvrs3grwwz84g-perl-DBD-SQLite-1.48 [...]
+ |   +---/nix/store/ymjf7jwbg1xidafhksi9csqzfsb02zqx-bzip2-1.0.6
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/ymjf7jwbg1xidafhksi9csqzfsb02zqx-bzip2-1.0.6 [...]
+ |   +---/nix/store/g9idnp7fzf06ir918wbhw6sz580i6gbw-nix-1.11.2 [...]
+ +---/nix/store/h1s9586w90h80r1na0wsixy9yqyjlj0q-git-2.7.1
+ |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   +---/nix/store/0fm4p26lvg6cv97gs3z29y9qr990677q-gzip-1.6 [...]
+ |   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42 [...]
+ |   +---/nix/store/2bvpy3bw05a5mvybay6ph501bmf6s05z-gettext-0.19.7
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42 [...]
+ |   |   +---/nix/store/ikzdbd65z7453spdvm05r0izd56zdvkx-gcc-4.9.3 [...]
+ |   |   +---/nix/store/2bvpy3bw05a5mvybay6ph501bmf6s05z-gettext-0.19.7 [...]
+ |   +---/nix/store/79mdd0cybnxl64dzfkyaixkp3viw7z06-perl-5.20.3 [...]
+ |   +---/nix/store/9rz8gxhzf8sw4kf2j2f1grr49w8zx5vj-openssl-1.0.1r [...]
+ |   +---/nix/store/wwh7mhwh269sfjkm6k5665b5kgp7jrk2-zlib-1.2.8 [...]
+ |   +---/nix/store/8h6hvrqbhj9zjg83v59ah36j22ljbxh7-curl-7.47.1 [...]
+ |   +---/nix/store/awbf3jh262m1k16hxgbgngdmxv66gd79-python-2.7.11
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/95wmyhk0y60r09b98l6v4vswv5m7xm4q-coreutils-8.25 [...]
+ |   |   +---/nix/store/9rz8gxhzf8sw4kf2j2f1grr49w8zx5vj-openssl-1.0.1r [...]
+ |   |   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42 [...]
+ |   |   +---/nix/store/wwh7mhwh269sfjkm6k5665b5kgp7jrk2-zlib-1.2.8 [...]
+ |   |   +---/nix/store/ymjf7jwbg1xidafhksi9csqzfsb02zqx-bzip2-1.0.6 [...]
+ |   |   +---/nix/store/awbf3jh262m1k16hxgbgngdmxv66gd79-python-2.7.11 [...]
+ |   +---/nix/store/bi5p7jq0xvha3aqlzkyh2yziwl19nh78-expat-2.1.0
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/bi5p7jq0xvha3aqlzkyh2yziwl19nh78-expat-2.1.0 [...]
+ |   +---/nix/store/y50jbamh4iw1nhgyi3xdxg14fd8hslpg-gnugrep-2.22
+ |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   +---/nix/store/1vvq1z30z211qh5vpsjf3ppvk0crcm53-pcre-8.38
+ |   |   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   |   |   +---/nix/store/ikzdbd65z7453spdvm05r0izd56zdvkx-gcc-4.9.3 [...]
+ |   |   |   +---/nix/store/1vvq1z30z211qh5vpsjf3ppvk0crcm53-pcre-8.38 [...]
+ |   |   +---/nix/store/y50jbamh4iw1nhgyi3xdxg14fd8hslpg-gnugrep-2.22 [...]
+ |   +---/nix/store/h1s9586w90h80r1na0wsixy9yqyjlj0q-git-2.7.1 [...]
+ +---/nix/store/wgy9kf7z23wd422nirlylq0whhy49ipw-gnused-4.2.2
+ |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+ |   +---/nix/store/wgy9kf7z23wd422nirlylq0whhy49ipw-gnused-4.2.2 [...]
+ +---/nix/store/43ppx2dmjwq2p8k0x6px58yyy0sxpyrz-nix-prefetch-git [...]
+ 
+ 
+ /nix/store/r6mm3v1wglzhgbpy9vx9vzyd6856b807-nix-prefetch-git
+ +---/nix/store/1fy1p7366rr924m7k5yidhlk5sv9r6vw-coreutils-8.25
+ |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   +---/nix/store/9yvanjh5jjvwxp5xa85b09mfjzrq8bvc-acl-2.2.52
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/fdjbs7yrxrwx0151f4n9jpfxvz5gilbq-attr-2.4.47
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/fdjbs7yrxrwx0151f4n9jpfxvz5gilbq-attr-2.4.47 [...]
+ |   |   +---/nix/store/9yvanjh5jjvwxp5xa85b09mfjzrq8bvc-acl-2.2.52 [...]
+ |   +---/nix/store/1fy1p7366rr924m7k5yidhlk5sv9r6vw-coreutils-8.25 [...]
+ +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42
+ |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ +---/nix/store/bsvcv4add76skp3j5px7iidpzw9krfk3-gnused-4.2.2
+ |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   +---/nix/store/bsvcv4add76skp3j5px7iidpzw9krfk3-gnused-4.2.2 [...]
+ +---/nix/store/df88l3yqc9fl1qgy4rmaldzci7hjb3vm-git-2.9.0
+ |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   +---/nix/store/3l8ggzkjyxx83y74kfi5bpv4cxm4nifx-expat-2.2.0
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/3l8ggzkjyxx83y74kfi5bpv4cxm4nifx-expat-2.2.0 [...]
+ |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ |   +---/nix/store/7gkk2s4q89fjnrkpmkaqs2rsxxj8l4ny-gettext-0.19.7
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ |   |   +---/nix/store/hyx21jmjsy3ph3n65zxsfhwzm4r7yhkq-gcc-5.4.0-lib
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/hyx21jmjsy3ph3n65zxsfhwzm4r7yhkq-gcc-5.4.0-lib [...]
+ |   |   +---/nix/store/7gkk2s4q89fjnrkpmkaqs2rsxxj8l4ny-gettext-0.19.7 [...]
+ |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h [...]
+ |   +---/nix/store/h6a5qnn3alf2xq0k7d1hzqqbss9d028x-zlib-1.2.8
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   +---/nix/store/aqc6s8l5rzxjv0yrgwj41c00kllxsyhl-openssh-7.2p2
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ |   |   +---/nix/store/fj9zz3carpk8nmwi0gh3rrzf9kq15lya-ncurses-5.9
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/fj9zz3carpk8nmwi0gh3rrzf9kq15lya-ncurses-5.9 [...]
+ |   |   +---/nix/store/8ybbk0y5bj0fwfa4wfqhig8c03jsabj9-libedit-20150325-3.1
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/fj9zz3carpk8nmwi0gh3rrzf9kq15lya-ncurses-5.9 [...]
+ |   |   |   +---/nix/store/0x61nl1fls6ab5ksk90kp12a9ccrs6l3-ncurses-5.9-dev
+ |   |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ |   |   |   |   +---/nix/store/fj9zz3carpk8nmwi0gh3rrzf9kq15lya-ncurses-5.9 [...]
+ |   |   |   |   +---/nix/store/hwg9ffhlih4gznmzbpkxipfnm51vm9i9-ncurses-5.9-man
+ |   |   |   |   +---/nix/store/0x61nl1fls6ab5ksk90kp12a9ccrs6l3-ncurses-5.9-dev [...]
+ |   |   |   +---/nix/store/8ybbk0y5bj0fwfa4wfqhig8c03jsabj9-libedit-20150325-3.1 [...]
+ |   |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h [...]
+ |   |   +---/nix/store/h6a5qnn3alf2xq0k7d1hzqqbss9d028x-zlib-1.2.8 [...]
+ |   |   +---/nix/store/w7mbvxliq6yr8hvagczgifd6jsg63bhg-linux-pam-1.2.1
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ |   |   |   +---/nix/store/0lf9nlr7znkczpgq8w1abrzm5m81f2r4-cracklib-2.9.6
+ |   |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ |   |   |   |   +---/nix/store/h6a5qnn3alf2xq0k7d1hzqqbss9d028x-zlib-1.2.8 [...]
+ |   |   |   |   +---/nix/store/0lf9nlr7znkczpgq8w1abrzm5m81f2r4-cracklib-2.9.6 [...]
+ |   |   |   +---/nix/store/w7mbvxliq6yr8hvagczgifd6jsg63bhg-linux-pam-1.2.1 [...]
+ |   |   +---/nix/store/aqc6s8l5rzxjv0yrgwj41c00kllxsyhl-openssh-7.2p2 [...]
+ |   +---/nix/store/bf2yh8f1r8hpjmnr1sy9mnhw0dbm5hra-gnugrep-2.25
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/13cbz82vfdvy60vx6ghnjr7057wq1bdx-pcre-8.38
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/13cbz82vfdvy60vx6ghnjr7057wq1bdx-pcre-8.38 [...]
+ |   |   +---/nix/store/bf2yh8f1r8hpjmnr1sy9mnhw0dbm5hra-gnugrep-2.25 [...]
+ |   +---/nix/store/bsjqscdpv9zgikghg6pbwn0l4cqd6gxx-curl-7.47.1
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h [...]
+ |   |   +---/nix/store/h6a5qnn3alf2xq0k7d1hzqqbss9d028x-zlib-1.2.8 [...]
+ |   |   +---/nix/store/rxs1q2pd2683m6fjrkfmg9bhapxvgm6r-nghttp2-1.10.0-lib
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/rxs1q2pd2683m6fjrkfmg9bhapxvgm6r-nghttp2-1.10.0-lib [...]
+ |   |   +---/nix/store/yys5j2k2l92cwz4dq3m9pim7v091qxaf-libssh2-1.7.0
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h [...]
+ |   |   |   +---/nix/store/h6a5qnn3alf2xq0k7d1hzqqbss9d028x-zlib-1.2.8 [...]
+ |   |   |   +---/nix/store/yys5j2k2l92cwz4dq3m9pim7v091qxaf-libssh2-1.7.0 [...]
+ |   |   +---/nix/store/bsjqscdpv9zgikghg6pbwn0l4cqd6gxx-curl-7.47.1 [...]
+ |   +---/nix/store/crvgrgvya6ggj67qknbs6aq7lp03n9v1-python-2.7.11
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/12vi3yn4ws0285602a9qlkq4ha5qzv5a-bzip2-1.0.6.0.1
+ |   |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   |   +---/nix/store/12vi3yn4ws0285602a9qlkq4ha5qzv5a-bzip2-1.0.6.0.1 [...]
+ |   |   +---/nix/store/1fy1p7366rr924m7k5yidhlk5sv9r6vw-coreutils-8.25 [...]
+ |   |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ |   |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h [...]
+ |   |   +---/nix/store/h6a5qnn3alf2xq0k7d1hzqqbss9d028x-zlib-1.2.8 [...]
+ |   |   +---/nix/store/crvgrgvya6ggj67qknbs6aq7lp03n9v1-python-2.7.11 [...]
+ |   +---/nix/store/kzj0br631km4d8arymlwpm9g2iimsn9h-perl-5.22.2
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/1fy1p7366rr924m7k5yidhlk5sv9r6vw-coreutils-8.25 [...]
+ |   |   +---/nix/store/kzj0br631km4d8arymlwpm9g2iimsn9h-perl-5.22.2 [...]
+ |   +---/nix/store/yfsixzkvj0izckkrg805093n0f3cfl1b-gzip-1.8
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   +---/nix/store/df88l3yqc9fl1qgy4rmaldzci7hjb3vm-git-2.9.0 [...]
+ +---/nix/store/jz75mzicpfb9z3i7zzqn0x80rn9shn7v-nix-1.11.2
+ |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   +---/nix/store/12vi3yn4ws0285602a9qlkq4ha5qzv5a-bzip2-1.0.6.0.1 [...]
+ |   +---/nix/store/1fy1p7366rr924m7k5yidhlk5sv9r6vw-coreutils-8.25 [...]
+ |   +---/nix/store/3fw6nx8p05a4sc742srawh5dnchnkjs9-sqlite-3.12.2
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/3fw6nx8p05a4sc742srawh5dnchnkjs9-sqlite-3.12.2 [...]
+ |   +---/nix/store/3p2j46p81xx28g1bpc9zr70dml9xb877-bash-4.3-p42 [...]
+ |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h [...]
+ |   +---/nix/store/bsjqscdpv9zgikghg6pbwn0l4cqd6gxx-curl-7.47.1 [...]
+ |   +---/nix/store/f2kxd5zwa1n8wf1ih5c1wid0m3zd2848-xz-5.2.2
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/f2kxd5zwa1n8wf1ih5c1wid0m3zd2848-xz-5.2.2 [...]
+ |   +---/nix/store/c727f8wbmbwla3rcz129m5qwmn9r2b2w-xz-5.2.2-bin
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/f2kxd5zwa1n8wf1ih5c1wid0m3zd2848-xz-5.2.2 [...]
+ |   +---/nix/store/dsvk68vkvbj7q9c2n9sz9aypx403lbaq-curl-7.47.1-bin
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h [...]
+ |   |   +---/nix/store/h6a5qnn3alf2xq0k7d1hzqqbss9d028x-zlib-1.2.8 [...]
+ |   |   +---/nix/store/bsjqscdpv9zgikghg6pbwn0l4cqd6gxx-curl-7.47.1 [...]
+ |   +---/nix/store/hsi2840cjvxhcq2b39jccmmrzwxfcyrf-bzip2-1.0.6.0.1-bin
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/12vi3yn4ws0285602a9qlkq4ha5qzv5a-bzip2-1.0.6.0.1 [...]
+ |   +---/nix/store/hyx21jmjsy3ph3n65zxsfhwzm4r7yhkq-gcc-5.4.0-lib [...]
+ |   +---/nix/store/kzj0br631km4d8arymlwpm9g2iimsn9h-perl-5.22.2 [...]
+ |   +---/nix/store/ikqhc3vvs76rzpk9s613mxsav3v6lsy5-perl-DBI-1.636
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/kzj0br631km4d8arymlwpm9g2iimsn9h-perl-5.22.2 [...]
+ |   |   +---/nix/store/ikqhc3vvs76rzpk9s613mxsav3v6lsy5-perl-DBI-1.636 [...]
+ |   +---/nix/store/kmrf82idr16gy8nmqz0z53gml8j9vj6f-boehm-gc-7.2f
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/hyx21jmjsy3ph3n65zxsfhwzm4r7yhkq-gcc-5.4.0-lib [...]
+ |   |   +---/nix/store/kmrf82idr16gy8nmqz0z53gml8j9vj6f-boehm-gc-7.2f [...]
+ |   +---/nix/store/ksg1ql50c8snmc001djwdvisxz4yhpv2-perl-WWW-Curl-4.17
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/bsjqscdpv9zgikghg6pbwn0l4cqd6gxx-curl-7.47.1 [...]
+ |   |   +---/nix/store/ksg1ql50c8snmc001djwdvisxz4yhpv2-perl-WWW-Curl-4.17 [...]
+ |   +---/nix/store/px11lqr3abyk3sivdjs4slz07y8hq1ix-libsodium-1.0.10
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/px11lqr3abyk3sivdjs4slz07y8hq1ix-libsodium-1.0.10 [...]
+ |   +---/nix/store/qq4z56l11xhzc3w9paqamnprllalmlph-perl-DBD-SQLite-1.48
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/3fw6nx8p05a4sc742srawh5dnchnkjs9-sqlite-3.12.2 [...]
+ |   |   +---/nix/store/ikqhc3vvs76rzpk9s613mxsav3v6lsy5-perl-DBI-1.636 [...]
+ |   |   +---/nix/store/qq4z56l11xhzc3w9paqamnprllalmlph-perl-DBD-SQLite-1.48 [...]
+ |   +---/nix/store/vvsh5bbjj9rmfg99l87iqv8ccnbamqbg-gnutar-1.29
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/9yvanjh5jjvwxp5xa85b09mfjzrq8bvc-acl-2.2.52 [...]
+ |   |   +---/nix/store/vvsh5bbjj9rmfg99l87iqv8ccnbamqbg-gnutar-1.29 [...]
+ |   +---/nix/store/wgi33skswnb2d5agi2790lzlj2ynq2xh-openssl-1.0.2h-bin
+ |   |   +---/nix/store/763vw2zyc9434dj7rw6c2kczj0blvssy-glibc-2.23 [...]
+ |   |   +---/nix/store/a71i75jckbpfqknli6yqrhjg80ipalz4-openssl-1.0.2h [...]
+ |   |   +---/nix/store/kzj0br631km4d8arymlwpm9g2iimsn9h-perl-5.22.2 [...]
+ |   +---/nix/store/yfsixzkvj0izckkrg805093n0f3cfl1b-gzip-1.8 [...]
+ |   +---/nix/store/jz75mzicpfb9z3i7zzqn0x80rn9shn7v-nix-1.11.2 [...]
+ +---/nix/store/r6mm3v1wglzhgbpy9vx9vzyd6856b807-nix-prefetch-git [...]
+ 
+ 
+
+
+OK, so clearly the dependencies are different; what could cause this? 
+
+pc1177: warning: there are multiple derivations named ‘nix-prefetch-git’; using the first one
+
+and it looks like we have nixos in .nix-def-expr, but only nix in .nix-channels
+
+want to reinitialize channels
+
+nix-channel --remove nixos
+nix-channel --update
+
+this works, and we are now up to date
+
+so we can use nix-prefetch-git to check hashes
+
+first, we might try running ci again; it works; probably because it is reusing lem source
+
+nix-store --delete /nix/store/77hcsyrhmr70dp720jdhxqfvzfcqyvlr-lem-5b4a168
+
+nix-store --delete  /nix/store/swdk7jfn5qwr7bhl4f260acfgrdqy5zg-lem.drv   /nix/store/av0a0a90b8j49li7jy46papqgixsl27q-fs_spec.drv   /nix/store/mxfwfpxzjldq9w8a1frkg03ariijy58r-fs_test.drv
+
+
+finding garbage collector roots...
+error: cannot delete path ‘/nix/store/av0a0a90b8j49li7jy46papqgixsl27q-fs_spec.drv’ since it is still alive
+0 store paths deleted, 0.00 MiB freed
+
+ nix-store -q --roots /nix/store/av0a0a90b8j49li7jy46papqgixsl27q-fs_spec.drv
+
+what is needed is a way to rebuild all dependencies
+
+
+nix-store --verify --check-contents --repair to try to force recomputing of hashes (and thus, rebuilding)
+
+
+gc roots:
+
+tr61@pc1177:/tmp/l/github/ci$ ls -al /nix/var/nix/gcroots/auto/
+total 52
+drwxr-xr-x 2 tr61 tr61 40960 Jul 14 12:32 .
+drwxr-xr-x 3 tr61 tr61  4096 Nov 29  2013 ..
+lrwxrwxrwx 1 tr61 tr61    34 Jul 14 12:22 0291wfyka7sdicw6nhh0bmg62b7a46j2 -> /tmp/1955098240787528832/p1/result
+lrwxrwxrwx 1 tr61 tr61    45 Jun 28 10:39 53a5ixgpkdj4izflc8qw3w0bzrfdsjnl -> /tmp/3864640332318516801/simple_earley/result
+lrwxrwxrwx 1 tr61 tr61    41 Jul 10  2015 77d6fydbiqbncvz79447aqv0j9r1vsy1 -> /mnt/sdb1/tom/bitbucket/fs.copy/fs/result
+lrwxrwxrwx 1 tr61 tr61    34 Jul 14 12:22 84ixka0yddidjc4bkl3n3xsgdyrfsjj0 -> /tmp/5838431124889032473/e3/result
+lrwxrwxrwx 1 tr61 tr61    44 Jul 14 12:10 bn8hyqvpcibyn0y8b84dxwxrpvdfqm39 -> /tmp/939292289461763401/simple_earley/result
+lrwxrwxrwx 1 tr61 tr61    35 May 31 12:00 cq5q5sj9zfp4wbl28lw74drh4cr5d0kf -> /mnt/sdb1/tom/github/nixpkgs/result
+lrwxrwxrwx 1 tr61 tr61    33 Aug 20  2015 crfm2qf4v6mxb8q24ai3d5m353n87ljh -> /mnt/sdb1/tom/bitbucket/fs/result
+lrwxrwxrwx 1 tr61 tr61    34 Jun 28 10:39 gj6fjhrla170zhc41vli4p1ga7cwyd6h -> /tmp/4888969021012080192/e3/result
+lrwxrwxrwx 1 tr61 tr61    39 Jun 10 13:39 ig5nsfk1q61vmqkjqkykgh8iymkj870c -> /mnt/sdb1/tom/github/sibylfs_src/result
+lrwxrwxrwx 1 tr61 tr61    34 Jul 14 12:21 ivn7hx15aaa747rsc54qrwdda4p9rwaa -> /tmp/9018013846173287412/p1/result
+lrwxrwxrwx 1 tr61 tr61    40 Jul 22  2015 jfsyan3pgs8rimf11dkrqbil395r0hk7 -> /mnt/sdb1/tom/bitbucket/fs_nix/fs/result
+lrwxrwxrwx 1 tr61 tr61    34 Jul 14 10:45 jla70213swqqj0f1iys140g56blaig43 -> /tmp/4099423361335433101/e3/result
+lrwxrwxrwx 1 tr61 tr61    45 Jul 14 12:22 knwafv5r5387hc4717gzx0d0zgslmal5 -> /tmp/5574822705425426715/simple_earley/result
+lrwxrwxrwx 1 tr61 tr61    43 Jul 14 10:45 l7jnr4rdr9fgc8hi76407wwglckyjr13 -> /tmp/6767562389702169065/sibylfs_src/result
+lrwxrwxrwx 1 tr61 tr61    33 Jul 14 12:21 l8amksk2hks5hd13hmkba8p28ix0h91g -> /tmp/414003158546678572/e3/result
+lrwxrwxrwx 1 tr61 tr61    34 Jul 14 12:09 lkp30sc8ipj10y85c9f9aapg47adrgmg -> /tmp/2646051097056415794/e3/result
+lrwxrwxrwx 1 tr61 tr61    34 Jul 14 12:09 lr0qj45vxbb9p2xrq5z9rkshww9rdrhx -> /tmp/6690760006279164662/p1/result
+lrwxrwxrwx 1 tr61 tr61    43 Jul 14 12:22 m4qlxrf39lzkiz16aa6fd0l160km2rvh -> /tmp/2231402612253777790/sibylfs_src/result
+lrwxrwxrwx 1 tr61 tr61    34 Jun 28 10:39 pd3akc6s7s2051v8fjj9yp8sz13dl3r4 -> /tmp/7431564068082728580/p1/result
+lrwxrwxrwx 1 tr61 tr61    70 Mar 22 10:58 pglfv1wqwwhaf9d7jh85fdahi0kbrgsq -> /mnt/sda5/tom/scratch/l/Dropbox/scala_workspace/ocamldep_to_dot/result
+lrwxrwxrwx 1 tr61 tr61    34 Jul 14 10:45 pz0x57j42bic3j62jbbj7v0dff9pp74g -> /tmp/6221190369090361282/p1/result
+lrwxrwxrwx 1 tr61 tr61    45 Jul 14 10:45 qnx41cl2lhzk2xkpxkwwzhj4kjamr4df -> /tmp/4528884286528857610/simple_earley/result
+lrwxrwxrwx 1 tr61 tr61    45 Jul 14 12:20 rx7wb8h6m7vvn5l2s4w7w06qz54q58ab -> /tmp/4507509463503805265/simple_earley/result
+lrwxrwxrwx 1 tr61 tr61    34 Jul 14 12:20 sbmzc0zyq852bn2if3crfc4qllarcxbn -> /tmp/1307128883077128996/p1/result
+lrwxrwxrwx 1 tr61 tr61    41 Jun 16 13:47 v8k05ddf44p774hzdxyd46rvj6w0gkln -> /mnt/sdb1/tom/github/simple_earley/result
+lrwxrwxrwx 1 tr61 tr61    45 Jul 14 12:21 wrnn0z7m9fhqc4yg0cpvjdxv05aarj7j -> /tmp/4560248760152094799/simple_earley/result
+lrwxrwxrwx 1 tr61 tr61    33 Jul 14 12:20 xny7w5bmd1gis83028b0jzmak54x87xz -> /tmp/512601027621631683/e3/result
+lrwxrwxrwx 1 tr61 tr61    43 Jun 28 10:39 xvfadjz83qs3a8jjxz4n5gx6i4k3m8r9 -> /tmp/5656238319337842123/sibylfs_src/result
+
+
+
+
+rm -f /mnt/sda5/tom/scratch/l/Dropbox/scala_workspace/ocamldep_to_dot/result
+rm -f /mnt/sdb1/tom/bitbucket/fs.copy/fs/result
+rm -f /mnt/sdb1/tom/bitbucket/fs/result
+rm -f /mnt/sdb1/tom/bitbucket/fs_nix/fs/result
+rm -f /mnt/sdb1/tom/github/nixpkgs/result
+rm -f /mnt/sdb1/tom/github/sibylfs_src/result
+rm -f /mnt/sdb1/tom/github/simple_earley/result
+rm -f /tmp/1307128883077128996/p1/result
+rm -f /tmp/1955098240787528832/p1/result
+rm -f /tmp/2231402612253777790/sibylfs_src/result
+rm -f /tmp/2646051097056415794/e3/result
+rm -f /tmp/3864640332318516801/simple_earley/result
+rm -f /tmp/4099423361335433101/e3/result
+rm -f /tmp/414003158546678572/e3/result
+rm -f /tmp/4507509463503805265/simple_earley/result
+rm -f /tmp/4528884286528857610/simple_earley/result
+rm -f /tmp/4560248760152094799/simple_earley/result
+rm -f /tmp/4888969021012080192/e3/result
+rm -f /tmp/512601027621631683/e3/result
+rm -f /tmp/5574822705425426715/simple_earley/result
+rm -f /tmp/5656238319337842123/sibylfs_src/result
+rm -f /tmp/5838431124889032473/e3/result
+rm -f /tmp/6221190369090361282/p1/result
+rm -f /tmp/6690760006279164662/p1/result
+rm -f /tmp/6767562389702169065/sibylfs_src/result
+rm -f /tmp/7431564068082728580/p1/result
+rm -f /tmp/9018013846173287412/p1/result
+rm -f /tmp/939292289461763401/simple_earley/result
+
+
+nix-store --gc
+
+yay! now we get the same error on pc1177
+
+Switched to a new branch 'fetchgit'
+removing `.git'...
+output path ‘/nix/store/77hcsyrhmr70dp720jdhxqfvzfcqyvlr-lem-5b4a168’ has r:sha256 hash ‘19642yadi089p8si87n0rbn0mwwxyvzjrv33g848gaqy811i0zak’ when ‘0z1chfa2q4h7rdzabyjjh3zhgdafjhjhxyna5hd6q11ns88v7xds’ was expected
+cannot build derivation ‘/nix/store/swdk7jfn5qwr7bhl4f260acfgrdqy5zg-lem.drv’: 1 dependencies couldn't be built
+building path(s) ‘/nix/store/lj44gfa17j3bqw2r7q4gs7x5ggb5jf0q-ocaml-fd-send-recv-1.0.1.tar.gz’
+killing process 11213
+cannot build derivation ‘/nix/store/mxfwfpxzjldq9w8a1frkg03ariijy58r-fs_test.drv’: 1 dependencies couldn't be built
+error: build of ‘/nix/store/mxfwfpxzjldq9w8a1frkg03ariijy58r-fs_test.drv’ failed
+
+End
+
+
+OK, now everything works again
+
+
